@@ -56,16 +56,14 @@ writeJson h = do
     do
       liftIO $ putStrLn $ "RECEIVED LINE: " ++ line
       liftIO $ appendFile "/tmp/rttylog" (line ++ "\n")
-      let parsed = parseOnly parseLine (T.pack line)
-        in
-       case parsed of
-         Left err -> liftIO $ putStrLn $ "ERROR: " ++ err
-         Right rttyLine'' -> do
-           currentDay <- liftIO getCurrentTime
-           rttyLine' <- liftIO rttyLine''
-           let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
-           liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
-           liftIO $ writeFile "/tmp/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
+      case parseOnly parseLine (T.pack line) of
+        Left err -> liftIO $ putStrLn $ "ERROR: " ++ err
+        Right rttyLine'' -> do
+          currentDay <- liftIO getCurrentTime
+          rttyLine' <- liftIO rttyLine''
+          let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
+          liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
+          liftIO $ writeFile "/tmp/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
     else return ()
   writeJson h
 
