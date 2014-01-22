@@ -4,6 +4,7 @@
 
 module Main where
 
+import Control.Monad (when)
 import Control.Monad.IO.Class
 import Control.Lens
 import qualified Data.Aeson as A
@@ -52,8 +53,7 @@ writeJson :: Handle -> Sh ()
 writeJson h = do
   liftIO $ hSetBuffering h NoBuffering
   line <- liftIO $ hGetLine h
-  if line /= "\n" then
-    do
+  when (null line) $ do
       liftIO $ putStrLn $ "RECEIVED LINE: " ++ line
       liftIO $ appendFile "/tmp/rttylog" (line ++ "\n")
       case parseOnly parseLine (T.pack line) of
@@ -64,7 +64,6 @@ writeJson h = do
           let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
           liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
           liftIO $ writeFile "/tmp/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
-    else return ()
   writeJson h
 
 
