@@ -4,7 +4,6 @@
 
 module Main where
 
-import Control.Monad (when)
 import Control.Monad.IO.Class
 import Control.Lens
 import qualified Data.Aeson as A
