@@ -46,13 +46,13 @@ main :: IO ()
 main = readRTTY
 
 readRTTY :: IO ()
-readRTTY = shelly $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"] writeJson
+readRTTY = shellyNoDir $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"] writeJson
 
 writeJson :: Handle -> Sh ()
 writeJson h = do
   liftIO $ hSetBuffering h NoBuffering
   line <- liftIO $ hGetLine h
-  when (null line) $ do
+  when (not (null line) && (line /= "RRRRR")) $ do
       liftIO $ putStrLn $ "RECEIVED LINE: " ++ line
       liftIO $ appendFile "/tmp/rttylog" (line ++ "\n")
       case parseOnly parseLine (T.pack line) of
