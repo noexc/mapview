@@ -52,22 +52,32 @@ writeJson :: Handle -> Sh ()
 writeJson h = do
   liftIO $ hSetBuffering h NoBuffering
   line <- liftIO $ hGetLine h
-  liftIO $ putStrLn $ "RECEIVED LINE: " ++ line
-  liftIO $ appendFile "/tmp/rttylog" (line ++ "\n")
-  let parsed = parseOnly parseLine (T.pack line)
-  case parsed of
-    Left err -> liftIO $ putStrLn $ "ERROR: " ++ err
-    Right rttyLine'' -> do
-      currentDay <- liftIO getCurrentTime
-      rttyLine' <- liftIO rttyLine''
-      let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
-      liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
-      liftIO $ writeFile "/tmp/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
+  if line /= "\n" then
+    do
+      liftIO $ putStrLn $ "RECEIVED LINE: " ++ line
+      liftIO $ appendFile "/tmp/rttylog" (line ++ "\n")
+      let parsed = parseOnly parseLine (T.pack line)
+        in
+       case parsed of
+         Left err -> liftIO $ putStrLn $ "ERROR: " ++ err
+         Right rttyLine'' -> do
+           currentDay <- liftIO getCurrentTime
+           rttyLine' <- liftIO rttyLine''
+           let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
+           liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
+           liftIO $ writeFile "/tmp/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
+    else return ()
   writeJson h
 
 
 parseLine :: Parser (IO RTTYLine)
 parseLine = do
+  _ <- char 'R'
+  _ <- char 'R'
+  _ <- char 'R'
+  _ <- char 'R'
+  _ <- char 'R'
+  _ <- char ':'
   callsign' <- takeWhile1 (/= ':')
   _ <- char ':'
   longitude' <- takeWhile1 (/= ':')
