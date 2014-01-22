@@ -65,7 +65,6 @@ writeJson h = do
           liftIO $ writeFile "/tmp/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
   writeJson h
 
-
 parseLine :: Parser (IO RTTYLine)
 parseLine = do
   _ <- char ':'
