@@ -72,11 +72,7 @@ writeJson h = do
 
 parseLine :: Parser (IO RTTYLine)
 parseLine = do
-  _ <- char 'R'
-  _ <- char 'R'
-  _ <- char 'R'
-  _ <- char 'R'
-  _ <- char 'R'
+  _ <- string "RRRRR"
   _ <- char ':'
   callsign' <- takeWhile1 (/= ':')
   _ <- char ':'
