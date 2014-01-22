@@ -22,11 +22,11 @@ type Longitude = Double
 type Meters    = Double
 
 data RTTYLine = RTTYLine {
-    _callsign :: T.Text
-  , _latitude :: Latitude
+    _callsign  :: T.Text
+  , _latitude  :: Latitude
   , _longitude :: Longitude
-  , _altitude :: Meters
-  , _time :: UTCTime
+  , _altitude  :: Meters
+  , _time      :: UTCTime
   } deriving Show
 
 makeLenses ''RTTYLine
@@ -35,11 +35,11 @@ makeLenses ''RTTYLine
 instance A.ToJSON RTTYLine where
   toJSON (RTTYLine c lon lat alt t) =
     A.object
-    [ "callsign" A..= c
-    , "latitude" A..= lat
+    [ "callsign"  A..= c
+    , "latitude"  A..= lat
     , "longitude" A..= lon
-    , "altitude" A..= alt
-    , "time" A..= t
+    , "altitude"  A..= alt
+    , "time"      A..= t
     ]
 
 main :: IO ()
@@ -80,7 +80,7 @@ parseLine = do
   return (
     (return $ RTTYLine
      callsign'
-     (read $ T.unpack latitude' :: Latitude)
+     (read $ T.unpack latitude'  :: Latitude)
      (read $ T.unpack longitude' :: Longitude)
-     (read $ T.unpack altitude' :: Meters)
+     (read $ T.unpack altitude'  :: Meters)
      (readTime defaultTimeLocale "%H%M%S" (T.unpack time'))) :: IO RTTYLine)
