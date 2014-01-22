@@ -1,31 +1,46 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Main where
 
 import Control.Monad.IO.Class
-import Data.Aeson
+import Control.Lens
+import qualified Data.Aeson as A
 import Data.Attoparsec.Text
+import Data.Thyme.Clock
+import Data.Thyme.Format
+import Data.Thyme.Format.Aeson ()
 import qualified Data.ByteString.Lazy.Char8 as C8L
 import qualified Data.Text as T
 import GHC.IO.Handle
-import Shelly
+import Shelly hiding (time)
+import System.Locale
 
 type Latitude  = Double
 type Longitude = Double
 type Meters    = Double
 
 data RTTYLine = RTTYLine {
-    callsign :: T.Text
-  , longitude :: Longitude
-  , latitude :: Latitude
-  , altitude :: Meters
-    -- Time is also in the line, but we can use the system time instead.
+    _callsign :: T.Text
+  , _longitude :: Longitude
+  , _latitude :: Latitude
+  , _altitude :: Meters
+  , _time :: UTCTime
   } deriving Show
 
-instance ToJSON RTTYLine where
-  toJSON (RTTYLine c lon lat alt) =
-    object ["callsign" .= c, "longitude" .= lon, "latitude" .= lat, "altitude" .= alt]
+makeLenses ''RTTYLine
+
+-- TODO: lens-aeson?
+instance A.ToJSON RTTYLine where
+  toJSON (RTTYLine c lon lat alt t) =
+    A.object
+    [ "callsign" A..= c
+    , "longitude" A..= lon
+    , "latitude" A..= lat
+    , "altitude" A..= alt
+    , "time" A..= t
+    ]
 
 main :: IO ()
 main = readRTTY
@@ -41,13 +56,16 @@ writeJson h = do
   let parsed = parseOnly parseLine (T.pack line)
   case parsed of
     Left err -> liftIO $ putStrLn $ "ERROR: " ++ err
-    Right rttyLine -> do
+    Right rttyLine'' -> do
+      currentDay <- liftIO $ getCurrentTime
+      rttyLine' <- liftIO rttyLine''
+      let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
       liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
-      liftIO $ writeFile "/tmp/rtty-coordinates.json" (C8L.unpack $ encode rttyLine)
+      liftIO $ writeFile "/tmp/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
   writeJson h
 
 
-parseLine :: Parser RTTYLine
+parseLine :: Parser (IO RTTYLine)
 parseLine = do
   callsign' <- takeWhile1 (/= ':')
   _ <- char ':'
@@ -56,4 +74,12 @@ parseLine = do
   latitude' <- takeWhile1 (/= ':')
   _ <- char ':'
   altitude' <- takeWhile1 (/= ':')
-  return $ RTTYLine callsign' (read $ T.unpack longitude' :: Longitude) (read $ T.unpack latitude' :: Latitude) (read $ T.unpack altitude' :: Meters)
+  _ <- char ':'
+  time' <- takeWhile1 (/= ':')
+  return (
+    (return $ RTTYLine
+     callsign'
+     (read $ T.unpack longitude' :: Longitude)
+     (read $ T.unpack latitude' :: Latitude)
+     (read $ T.unpack altitude' :: Meters)
+     (readTime defaultTimeLocale "%H%M%S" (T.unpack time'))) :: IO RTTYLine)
