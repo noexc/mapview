@@ -57,7 +57,7 @@ writeJson h = do
   case parsed of
     Left err -> liftIO $ putStrLn $ "ERROR: " ++ err
     Right rttyLine'' -> do
-      currentDay <- liftIO $ getCurrentTime
+      currentDay <- liftIO getCurrentTime
       rttyLine' <- liftIO rttyLine''
       let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
       liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
