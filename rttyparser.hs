@@ -23,8 +23,8 @@ type Meters    = Double
 
 data RTTYLine = RTTYLine {
     _callsign :: T.Text
-  , _longitude :: Longitude
   , _latitude :: Latitude
+  , _longitude :: Longitude
   , _altitude :: Meters
   , _time :: UTCTime
   } deriving Show
@@ -36,8 +36,8 @@ instance A.ToJSON RTTYLine where
   toJSON (RTTYLine c lon lat alt t) =
     A.object
     [ "callsign" A..= c
-    , "longitude" A..= lon
     , "latitude" A..= lat
+    , "longitude" A..= lon
     , "altitude" A..= alt
     , "time" A..= t
     ]
@@ -70,9 +70,9 @@ parseLine = do
   _ <- char ':'
   callsign' <- takeWhile1 (/= ':')
   _ <- char ':'
-  longitude' <- takeWhile1 (/= ':')
-  _ <- char ':'
   latitude' <- takeWhile1 (/= ':')
+  _ <- char ':'
+  longitude' <- takeWhile1 (/= ':')
   _ <- char ':'
   altitude' <- takeWhile1 (/= ':')
   _ <- char ':'
@@ -80,7 +80,7 @@ parseLine = do
   return (
     (return $ RTTYLine
      callsign'
-     (read $ T.unpack longitude' :: Longitude)
      (read $ T.unpack latitude' :: Latitude)
+     (read $ T.unpack longitude' :: Longitude)
      (read $ T.unpack altitude' :: Meters)
      (readTime defaultTimeLocale "%H%M%S" (T.unpack time'))) :: IO RTTYLine)
