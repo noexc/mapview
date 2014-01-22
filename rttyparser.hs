@@ -53,6 +53,7 @@ writeJson h = do
   liftIO $ hSetBuffering h NoBuffering
   line <- liftIO $ hGetLine h
   liftIO $ putStrLn $ "RECEIVED LINE: " ++ line
+  liftIO $ appendFile "/tmp/rttylog" (line ++ "\n")
   let parsed = parseOnly parseLine (T.pack line)
   case parsed of
     Left err -> liftIO $ putStrLn $ "ERROR: " ++ err
