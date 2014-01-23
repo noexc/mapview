@@ -39,6 +39,7 @@ executable mapview
   main-is:             mapview.hs
   build-depends:
       base ==4.6.*
+    , directory >= 1.2
     , fsnotify >= 0.0.11
     , system-filepath >= 0.4
     , text >= 0.11

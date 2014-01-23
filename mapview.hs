@@ -10,6 +10,7 @@ import qualified Data.UUID.V4 as UUIDv4
 import qualified Data.Text.IO as T
 import qualified Filesystem.Path.CurrentOS as COS
 import qualified Network.WebSockets as WS
+import System.Directory (doesFileExist)
 import System.FSNotify
 
 type Client = (String, WS.Connection)
@@ -45,6 +46,10 @@ application state pending = do
       let s' = addClient client s
       WS.sendTextData (snd client) ("Welcome!" :: Text)
       broadcast "someone joined" s'
+      e <- doesFileExist "/tmp/w8upd/rtty-coordinates.json"
+      when e $ do
+        json <- T.readFile "/tmp/w8upd/rtty-coordinates.json"
+        WS.sendTextData (snd client) json
       return s'
     talk (snd client) state
   where
