@@ -15,6 +15,7 @@ import qualified Data.ByteString.Lazy.Char8 as C8L
 import qualified Data.Text as T
 import GHC.IO.Handle
 import Shelly hiding (time)
+import System.Directory (createDirectoryIfMissing)
 import System.Locale
 
 type Latitude  = Double
@@ -43,7 +44,10 @@ instance A.ToJSON RTTYLine where
     ]
 
 main :: IO ()
-main = readRTTY
+main = do
+  createDirectoryIfMissing True "/tmp/w8upd"
+  createDirectoryIfMissing True "/var/tmp/w8upd"
+  readRTTY
 
 readRTTY :: IO ()
 readRTTY = shellyNoDir $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"] writeJson
@@ -54,7 +58,7 @@ writeJson h = do
   line <- liftIO $ hGetLine h
   when (not (null line) && (line /= "RRRRR")) $ do
       liftIO $ putStrLn $ "RECEIVED LINE: " ++ line
-      liftIO $ appendFile "/tmp/rttylog" (line ++ "\n")
+      liftIO $ appendFile "/var/tmp/w8upd/rttylog" (line ++ "\n")
       case parseOnly parseLine (T.pack line) of
         Left err -> liftIO $ putStrLn $ "ERROR: " ++ err
         Right rttyLine'' -> do
@@ -62,7 +66,7 @@ writeJson h = do
           rttyLine' <- liftIO rttyLine''
           let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
           liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
-          liftIO $ writeFile "/tmp/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
+          liftIO $ writeFile "/tmp/w8upd/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
   writeJson h
 
 parseLine :: Parser (IO RTTYLine)
