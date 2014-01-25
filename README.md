@@ -20,13 +20,21 @@ via websockets. The client updates its Google Map and displays the new location.
 Because it uses the Google Maps API, clients must have an active internet
 connection for this to work.
 
-# Using it
-
-* `yum install minimodem haskell-platform`
+# Getting set up
+* `sudo curl -o /etc/yum.repos.d/codeblock-closure-compiler.repo http://copr.fedoraproject.org/coprs/codeblock/closure-compiler/repo/fedora-rawhide-i386/`
+  * Note that this URL should work even if you aren't on rawhide. You shouldn't need to change the above line as long as you're on Fedora 19+.
+* `yum install minimodem haskell-platform closure-compiler`
 * `cabal update && cabal install cabal-install`
 * Clone the repository
 * `cabal sandbox init`
 * `cabal install`
+
+# Client-side Fay
+* `cd static`
+* `./build.sh`
+* Now you can deploy mapview.html and mapview.min.js to the server of your choice.
+
+# Running it
 * `.cabal-sandbox/bin/mapupdater`
 * Go to http://localhost:8088/ in a browser
 * In another terminal, `.cabal-sandbox/bin/rttyparser`
