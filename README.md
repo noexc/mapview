@@ -32,7 +32,7 @@ connection for this to work.
 # Client-side Fay
 * `cd static`
 * `./build.sh`
-* Now you can deploy mapview.html and mapview.min.js to the server of your choice.
+* Now you can deploy index.html and mapview.min.js to the server of your choice.
 
 # Running it
 * `.cabal-sandbox/bin/mapupdater`
