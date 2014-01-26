@@ -46,10 +46,17 @@ application state pending = do
       let s' = addClient client s
       WS.sendTextData (snd client) ("Welcome!" :: Text)
       broadcast "someone joined" s'
+
+      l <- doesFileExist "/var/tmp/w8upd/coordinates-log.json"
+      when l $ do
+        json <- T.readFile "/var/tmp/w8upd/coordinates-log.json"
+        WS.sendTextData (snd client) json
+
       e <- doesFileExist "/tmp/w8upd/rtty-coordinates.json"
       when e $ do
         json <- T.readFile "/tmp/w8upd/rtty-coordinates.json"
         WS.sendTextData (snd client) json
+
       return s'
     talk (snd client) state
   where
