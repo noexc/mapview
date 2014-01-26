@@ -4,10 +4,13 @@
 
 module Main where
 
+import Control.Applicative
+import Control.Monad (mzero)
 import Control.Monad.IO.Class
 import Control.Lens
 import qualified Data.Aeson as A
 import Data.Attoparsec.Text
+import Data.Maybe (fromMaybe)
 import Data.Thyme.Clock
 import Data.Thyme.Format
 import Data.Thyme.Format.Aeson ()
@@ -22,35 +25,76 @@ type Latitude  = Double
 type Longitude = Double
 type Meters    = Double
 
-data RTTYLine = RTTYLine {
-    _callsign  :: T.Text
-  , _latitude  :: Latitude
+data Coordinates = Coordinates {
+    _latitude  :: Latitude
   , _longitude :: Longitude
-  , _altitude  :: Meters
-  , _time      :: UTCTime
+  } deriving Show
+
+makeLenses ''Coordinates
+
+data CoordinatesList = CoordinatesList {
+    coordinatesList :: [Coordinates]
+    }
+
+data RTTYLine = RTTYLine {
+    _callsign   :: T.Text
+  , coordinates :: Coordinates
+  , _altitude   :: Meters
+  , _time       :: UTCTime
   } deriving Show
 
 makeLenses ''RTTYLine
 
 -- TODO: lens-aeson?
-instance A.ToJSON RTTYLine where
-  toJSON (RTTYLine c lon lat alt t) =
+instance A.ToJSON Coordinates where
+  toJSON (Coordinates lat lon) =
     A.object
-    [ "callsign"  A..= c
-    , "latitude"  A..= lat
+    [ "latitude"  A..= lat
     , "longitude" A..= lon
-    , "altitude"  A..= alt
-    , "time"      A..= t
+    ]
+
+instance A.ToJSON CoordinatesList where
+  toJSON (CoordinatesList c) =
+    A.object
+    [ "coordinates"  A..= c
+    ]
+
+instance A.FromJSON CoordinatesList where
+  parseJSON (A.Object v) = CoordinatesList <$>
+                               v A..: "coordinates"
+  parseJSON _            = mzero
+
+instance A.FromJSON Coordinates where
+  parseJSON (A.Object v) = Coordinates <$>
+                               v A..: "latitude"
+                           <*> v A..: "longitude"
+  parseJSON _            = mzero
+
+instance A.ToJSON RTTYLine where
+  toJSON (RTTYLine c coord alt t) =
+    A.object
+    [ "callsign"    A..= c
+    , "coordinates" A..= coord
+    , "altitude"    A..= alt
+    , "time"        A..= t
     ]
 
 main :: IO ()
 main = do
   createDirectoryIfMissing True "/tmp/w8upd"
   createDirectoryIfMissing True "/var/tmp/w8upd"
+  writeFile "/tmp/w8upd/rtty-coordinates.json" ""
+  writeFile "/var/tmp/w8upd/rttylog" ""
+  writeFile "/var/tmp/w8upd/coordinates-log.json" ""
   readRTTY
 
 readRTTY :: IO ()
 readRTTY = shellyNoDir $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"] writeJson
+
+recordCoordinates :: Coordinates -> IO ()
+recordCoordinates latest = do
+  cList <- fmap A.decode (C8L.readFile "/var/tmp/w8upd/coordinates-log.json") :: IO (Maybe CoordinatesList)
+  writeFile "/var/tmp/w8upd/coordinates-log.json" (C8L.unpack $ A.encode (latest : fromMaybe [] (fmap coordinatesList cList)))
 
 writeJson :: Handle -> Sh ()
 writeJson h = do
@@ -84,7 +128,8 @@ parseLine = do
   return (
     (return $ RTTYLine
      callsign'
-     (read $ T.unpack latitude'  :: Latitude)
-     (read $ T.unpack longitude' :: Longitude)
+     (Coordinates
+      (read $ T.unpack latitude'  :: Latitude)
+      (read $ T.unpack longitude' :: Longitude))
      (read $ T.unpack altitude'  :: Meters)
      (readTime defaultTimeLocale "%H%M%S" (T.unpack time'))) :: IO RTTYLine)
