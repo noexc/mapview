@@ -4,12 +4,11 @@
 
 module Main where
 
-import Control.Applicative
-import Control.Monad (mzero)
 import Control.Monad.IO.Class
 import Control.Lens
 import qualified Data.Aeson as A
 import Data.Attoparsec.Text
+import Data.Maybe (fromMaybe)
 import Data.Thyme.Clock
 import Data.Thyme.Format
 import Data.Thyme.Format.Aeson ()
@@ -18,7 +17,9 @@ import qualified Data.Text as T
 import GHC.IO.Handle
 import Shelly hiding (time)
 import System.Directory (createDirectoryIfMissing)
+import qualified System.IO.Strict as S
 import System.Locale
+import System.Posix.Files
 
 type Latitude  = Double
 type Longitude = Double
@@ -33,11 +34,11 @@ makeLenses ''Coordinates
 
 data CoordinatesList = CoordinatesList {
     coordinatesList :: [Coordinates]
-    }
+    } deriving Show
 
 data RTTYLine = RTTYLine {
     _callsign   :: T.Text
-  , coordinates :: Coordinates
+  , _coordinates :: (Latitude, Longitude)
   , _altitude   :: Meters
   , _time       :: UTCTime
   } deriving Show
@@ -52,23 +53,6 @@ instance A.ToJSON Coordinates where
     , "longitude" A..= lon
     ]
 
-instance A.ToJSON CoordinatesList where
-  toJSON (CoordinatesList c) =
-    A.object
-    [ "coordinates"  A..= c
-    ]
-
-instance A.FromJSON CoordinatesList where
-  parseJSON (A.Object v) = CoordinatesList <$>
-                               v A..: "coordinates"
-  parseJSON _            = mzero
-
-instance A.FromJSON Coordinates where
-  parseJSON (A.Object v) = Coordinates <$>
-                               v A..: "latitude"
-                           <*> v A..: "longitude"
-  parseJSON _            = mzero
-
 instance A.ToJSON RTTYLine where
   toJSON (RTTYLine c coord alt t) =
     A.object
@@ -82,18 +66,19 @@ main :: IO ()
 main = do
   createDirectoryIfMissing True "/tmp/w8upd"
   createDirectoryIfMissing True "/var/tmp/w8upd"
-  writeFile "/tmp/w8upd/rtty-coordinates.json" ""
-  writeFile "/var/tmp/w8upd/rttylog" ""
-  writeFile "/var/tmp/w8upd/coordinates-log.json" ""
+  touchFile "/var/tmp/w8upd/coordinates-log.json"
+  touchFile "/var/tmp/w8upd/rttylog"
+  touchFile "/tmp/w8upd/rtty-coordinates.json"
   readRTTY
 
 readRTTY :: IO ()
 readRTTY = shellyNoDir $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"] writeJson
 
-recordCoordinates :: Coordinates -> IO ()
+recordCoordinates :: (Latitude, Longitude) -> IO ()
 recordCoordinates latest = do
-  cList <- fmap A.decode (C8L.readFile "/var/tmp/w8upd/coordinates-log.json") :: IO (Maybe CoordinatesList)
-  writeFile "/var/tmp/w8upd/coordinates-log.json" (C8L.unpack $ A.encode (latest : maybe [] coordinatesList cList))
+  old <- S.readFile "/var/tmp/w8upd/coordinates-log.json"
+  let cList = A.decode (C8L.pack old) :: Maybe [(Latitude, Longitude)]
+  writeFile "/var/tmp/w8upd/coordinates-log.json" (C8L.unpack $ A.encode (latest : fromMaybe [] cList))
 
 writeJson :: Handle -> Sh ()
 writeJson h = do
@@ -110,6 +95,7 @@ writeJson h = do
           let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
           liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
           liftIO $ writeFile "/tmp/w8upd/rtty-coordinates.json" (C8L.unpack $ A.encode rttyLine)
+          liftIO $ recordCoordinates (rttyLine ^. coordinates)
   writeJson h
 
 parseLine :: Parser (IO RTTYLine)
@@ -127,8 +113,8 @@ parseLine = do
   return (
     (return $ RTTYLine
      callsign'
-     (Coordinates
-      (read $ T.unpack latitude'  :: Latitude)
-      (read $ T.unpack longitude' :: Longitude))
+     ( (read $ T.unpack latitude'  :: Latitude)
+     , (read $ T.unpack longitude' :: Longitude)
+     )
      (read $ T.unpack altitude'  :: Meters)
      (readTime defaultTimeLocale "%H%M%S" (T.unpack time'))) :: IO RTTYLine)
