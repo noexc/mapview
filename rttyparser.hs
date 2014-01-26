@@ -10,7 +10,6 @@ import Control.Monad.IO.Class
 import Control.Lens
 import qualified Data.Aeson as A
 import Data.Attoparsec.Text
-import Data.Maybe (fromMaybe)
 import Data.Thyme.Clock
 import Data.Thyme.Format
 import Data.Thyme.Format.Aeson ()
@@ -94,7 +93,7 @@ readRTTY = shellyNoDir $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700",
 recordCoordinates :: Coordinates -> IO ()
 recordCoordinates latest = do
   cList <- fmap A.decode (C8L.readFile "/var/tmp/w8upd/coordinates-log.json") :: IO (Maybe CoordinatesList)
-  writeFile "/var/tmp/w8upd/coordinates-log.json" (C8L.unpack $ A.encode (latest : fromMaybe [] (fmap coordinatesList cList)))
+  writeFile "/var/tmp/w8upd/coordinates-log.json" (C8L.unpack $ A.encode (latest : maybe [] coordinatesList cList))
 
 writeJson :: Handle -> Sh ()
 writeJson h = do
