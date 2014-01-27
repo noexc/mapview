@@ -4,6 +4,8 @@
 
 module Main where
 
+import Control.Applicative
+import Control.Monad (mzero)
 import Control.Monad.IO.Class
 import Control.Lens
 import qualified Data.Aeson as A
@@ -38,7 +40,7 @@ data CoordinatesList = CoordinatesList {
 
 data RTTYLine = RTTYLine {
     _callsign   :: T.Text
-  , _coordinates :: (Latitude, Longitude)
+  , _coordinates :: Coordinates
   , _altitude   :: Meters
   , _time       :: UTCTime
   } deriving Show
@@ -51,7 +53,14 @@ instance A.ToJSON Coordinates where
     A.object
     [ "latitude"  A..= lat
     , "longitude" A..= lon
+    , "instance"  A..= ("Coordinates" :: String)
     ]
+
+instance A.FromJSON Coordinates where
+  parseJSON (A.Object v) = Coordinates <$>
+                             v A..: "latitude"
+                         <*> v A..: "longitude"
+  parseJSON _          = mzero
 
 instance A.ToJSON RTTYLine where
   toJSON (RTTYLine c coord alt t) =
@@ -60,6 +69,7 @@ instance A.ToJSON RTTYLine where
     , "coordinates" A..= coord
     , "altitude"    A..= alt
     , "time"        A..= t
+    , "instance"    A..= ("MapUpdate" :: String)
     ]
 
 main :: IO ()
@@ -74,10 +84,10 @@ main = do
 readRTTY :: IO ()
 readRTTY = shellyNoDir $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"] writeJson
 
-recordCoordinates :: (Latitude, Longitude) -> IO ()
+recordCoordinates :: Coordinates -> IO ()
 recordCoordinates latest = do
   old <- S.readFile "/var/tmp/w8upd/coordinates-log.json"
-  let cList = A.decode (C8L.pack old) :: Maybe [(Latitude, Longitude)]
+  let cList = A.decode (C8L.pack old) :: Maybe [Coordinates]
   writeFile "/var/tmp/w8upd/coordinates-log.json" (C8L.unpack $ A.encode (latest : fromMaybe [] cList))
 
 writeJson :: Handle -> Sh ()
@@ -113,8 +123,8 @@ parseLine = do
   return (
     (return $ RTTYLine
      callsign'
-     ( (read $ T.unpack latitude'  :: Latitude)
-     , (read $ T.unpack longitude' :: Longitude)
-     )
+     (Coordinates
+      (read $ T.unpack latitude'  :: Latitude)
+      (read $ T.unpack longitude' :: Longitude))
      (read $ T.unpack altitude'  :: Meters)
      (readTime defaultTimeLocale "%H%M%S" (T.unpack time'))) :: IO RTTYLine)
