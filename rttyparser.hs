@@ -82,7 +82,7 @@ main = do
   readRTTY
 
 readRTTY :: IO ()
-readRTTY = shellyNoDir $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"] writeJson
+readRTTY = shelly $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"] writeJson
 
 recordCoordinates :: Coordinates -> IO ()
 recordCoordinates latest = do
