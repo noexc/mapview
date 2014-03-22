@@ -130,7 +130,7 @@ mvcPop = ffi "%1.pop()"
 
 main :: Fay ()
 main = do
-  socket <- newWebSocket "ws://localhost:9160"
+  socket <- newWebSocket "ws://mapview.w8upd.org:9160"
 
   mapE <- getElementById "map-canvas"
   startingPoint <- newLatLng 0.0 0.0
