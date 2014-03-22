@@ -3,6 +3,8 @@
 cwd="$( cd "${BASH_SOURCE[0]%/*}" && pwd )"
 
 pushd "$cwd/.."
+export HASKELL_PACKAGE_SANDBOX="$(echo .cabal-sandbox/*-packages.conf.d)"
+export PATH=".cabal-sandbox/bin:$PATH"
 .cabal-sandbox/bin/fay --include --include=../.cabal-sandbox --package fay-text,fay-dom "$cwd/mapview.hs"
 if [ "$1" == "dev" ]; then
   echo "[dev] Not sending to Closure Compiler to minify."
