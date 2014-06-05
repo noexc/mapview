@@ -38,15 +38,21 @@ data Announcement =
     }
 
 instance ToJSON Announcement where
-  toJSON (Emergency s)  = object ["data" .= ("announcement" :: Text), "severity" .= ("emergency" :: Text), "text" .= s]
-  toJSON (Critical s)  = object ["data" .= ("announcement" :: Text), "severity" .= ("critical" :: Text), "text" .= s]
-  toJSON (Warning s)  = object ["data" .= ("announcement" :: Text), "severity" .= ("warning" :: Text), "text" .= s]
-  toJSON (Successful s)  = object ["data" .= ("announcement" :: Text), "severity" .= ("successful" :: Text), "text" .= s]
-  toJSON (Info s)  = object ["data" .= ("announcement" :: Text), "severity" .= ("info" :: Text), "text" .= s]
+  toJSON m@(Emergency s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
+  toJSON m@(Critical s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
+  toJSON m@(Warning s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
+  toJSON m@(Successful s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
+  toJSON m@(Info s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
+
+instance Show Announcement where
+  show (Emergency _)  = "emergency"
+  show (Critical _)   = "critical"
+  show (Warning _)    = "warning"
+  show (Successful _) = "success"
+  show (Info _)       = "info"
 
 severityOptions :: (String -> Announcement) -> Parser Announcement
-severityOptions s =
-  s <$> argument str (metavar "MESSAGE")
+severityOptions = flip fmap (argument str (metavar "MESSAGE"))
 
 announceOptions :: Parser Announcement
 announceOptions =

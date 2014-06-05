@@ -51,7 +51,9 @@ executable mapview-send
 executable mapview-announce
   main-is:             mapview-announce.hs
   build-depends:
-      base > 4 && < 5
+      aeson >= 0.7
+    , base > 4 && < 5
+    , bytestring >= 0.10
     , directory >= 1.2
     , optparse-applicative >= 0.9
     , text >= 1.1
