@@ -15,41 +15,29 @@ import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Text
 import Options.Applicative
 
-data Announcement =
-    Emergency {
-      text :: String
-      -- ^ Used when something terrible has happened. mapview-psc uses JS @alert()@ for this. This should almost never be used.
-    }
-    | Critical {
-      text :: String
+data Announcement = Announcement Urgency String
+
+data Urgency
+  =  Emergency
+     -- ^ Used when something terrible has happened. mapview-psc uses JS @alert()@ for this. This should almost never be used.
+    | Critical
       -- ^ Used when something bad has happened.
-    }
-    | Warning {
-      text :: String
+    | Warning
       -- ^ Used when some difficulties are being experienced or something might go worse than planned.
-    }
-    | Successful {
-      text :: String
+    | Successful
       -- ^ Used when something has gone right. :-)
-    }
-    | Info {
-      text :: String
+    | Info
       -- ^ Used for general purpose information.
-    }
 
 instance ToJSON Announcement where
-  toJSON m@(Emergency s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
-  toJSON m@(Critical s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
-  toJSON m@(Warning s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
-  toJSON m@(Successful s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
-  toJSON m@(Info s)  = object ["data" .= ("announcement" :: Text), "severity" .= show m, "text" .= s]
+  toJSON (Announcement u s)  = object ["data" .= ("announcement" :: Text), "severity" .= show u, "text" .= s]
 
-instance Show Announcement where
-  show (Emergency _)  = "emergency"
-  show (Critical _)   = "critical"
-  show (Warning _)    = "warning"
-  show (Successful _) = "success"
-  show (Info _)       = "info"
+instance Show Urgency where
+  show Emergency  = "emergency"
+  show Critical   = "critical"
+  show Warning    = "warning"
+  show Successful = "success"
+  show Info       = "info"
 
 severityOptions :: (String -> Announcement) -> Parser Announcement
 severityOptions = flip fmap (argument str (metavar "MESSAGE"))
@@ -57,15 +45,15 @@ severityOptions = flip fmap (argument str (metavar "MESSAGE"))
 announceOptions :: Parser Announcement
 announceOptions =
   subparser (
-    (command "emergency" (info (severityOptions Emergency)
+    (command "emergency" (info (severityOptions (Announcement Emergency))
                           (progDesc "Send an emergency broadcast. Use very sparingly.")))
-    <> (command "critical" (info (severityOptions Critical)
+    <> (command "critical" (info (severityOptions (Announcement Critical))
                             (progDesc "Send a critical broadcast.")))
-    <> (command "warning" (info (severityOptions Warning)
+    <> (command "warning" (info (severityOptions (Announcement Warning))
                            (progDesc "Send a warning broadcast.")))
-    <> (command "successful" (info (severityOptions Successful)
+    <> (command "successful" (info (severityOptions (Announcement Successful))
                               (progDesc "Send an announcement about something that went right.")))
-    <> (command "info" (info (severityOptions Info)
+    <> (command "info" (info (severityOptions (Announcement Info))
                         (progDesc "Send a general informative announcement")))
     )
 
