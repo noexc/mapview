@@ -1,0 +1,35 @@
+# This is the configuration we use for the server-side part of mapview.
+
+# The coordinates log is a log of all data that we have previously dispatched to
+# mapview-send. This path is written to by rttyparser and read from by
+# mapview-send.
+#
+# Each time a client connects to mapview-send, we'll send them the contents of
+# this file in a particular format that lets mapview-psc (the client-side part
+# of mapview) know that it needs to display this path.
+coordinates_log = "/var/tmp/w8upd/coordinates-log.json"
+
+# The rtty log is a record of the raw telemetry we've received from the modem
+# command. Every time we see a newline, we write the line it follows to this
+# file. This is useful for auditing and maybe debugging.
+rttylog = "/var/tmp/w8upd/rttylog"
+
+# This path is where we write the "working coordinates" on each update. Every
+# time we successfully parse an update, we write a JSONified version of the
+# result to this file.
+#
+# This file is what mapview-send reads to send out its location update
+# broadcasts. If this file changes, a JSON message will be sent out to all
+# connected clients, containing this file's contents.
+working_coordinates = "/tmp/w8upd/rtty-coordinates.json"
+
+# mapview-send has the ability to send out important announcements. mapview-psc
+# will show these as a banner near the top of the screen, while other clients
+# may potentially show them in other ways.
+#
+# To do this, mapview-send listens for changes to a particular file, specified
+# here.
+#
+# You can use the included `mapview-announce` program to write out this file in
+# a way that mapview-send understands.
+latest_announcement = "/var/tmp/w8upd/latest-announcement.json

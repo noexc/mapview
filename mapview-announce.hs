@@ -12,10 +12,16 @@ module Main where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as C
+--import Data.Configurator
 import Data.Text
 import Options.Applicative
 
+data FullCommand = FullCommand GlobalOptions Announcement
+
 data Announcement = Announcement Urgency String
+
+data GlobalOptions =
+  GlobalOptions { configFile :: String }
 
 data Urgency
   =  Emergency
@@ -57,11 +63,25 @@ announceOptions =
                         (progDesc "Send a general informative announcement")))
     )
 
-opts :: ParserInfo Announcement
-opts = info (announceOptions <**> helper) idm
+globalOptions :: Parser GlobalOptions
+globalOptions = GlobalOptions
+                <$> strOption (long "conf" <> short 'c' <> metavar "CONFIG_FILE")
+
+fullCommand :: Parser FullCommand
+fullCommand = FullCommand
+              <$> globalOptions
+              <*> announceOptions
+
+opts :: ParserInfo FullCommand
+opts = info (fullCommand <**> helper)
+       (fullDesc
+       <> progDesc "Broadcast announcements to mapview websocket clients"
+       <> header "mapview-announce - an announcement generator for mapview")
 
 main :: IO ()
 main = execParser opts >>= runAnnouncement
 
-runAnnouncement :: Announcement -> IO ()
-runAnnouncement s = putStrLn $ C.unpack (encode s)
+runAnnouncement :: FullCommand -> IO ()
+runAnnouncement (FullCommand _ a) = do
+  let jsonData = C.unpack (encode a)
+  putStrLn jsonData
