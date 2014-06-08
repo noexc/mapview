@@ -2,7 +2,7 @@
 
 -- |
 -- Module      :  W8UPD.MapView.Announce.Main
--- Copyright   :  (c) 2014 Ricky Elrod>
+-- Copyright   :  (c) 2014 Ricky Elrod
 --
 -- Maintainer  :  Ricky Elrod <ricky@elrod.me>
 -- Stability   :  experimental
@@ -12,7 +12,7 @@ module Main where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as C
---import Data.Configurator
+import qualified Data.Configurator as Cfg
 import Data.Text
 import Options.Applicative
 
@@ -65,7 +65,10 @@ announceOptions =
 
 globalOptions :: Parser GlobalOptions
 globalOptions = GlobalOptions
-                <$> strOption (long "conf" <> short 'c' <> metavar "CONFIG_FILE")
+                <$> strOption (long "conf"
+                            <> short 'c'
+                            <> metavar "CONFIG_FILE"
+                            <> value "mapview.conf")
 
 fullCommand :: Parser FullCommand
 fullCommand = FullCommand
@@ -82,6 +85,9 @@ main :: IO ()
 main = execParser opts >>= runAnnouncement
 
 runAnnouncement :: FullCommand -> IO ()
-runAnnouncement (FullCommand _ a) = do
+runAnnouncement (FullCommand gc a) = do
+  config <- Cfg.load [Cfg.Required $ configFile gc]
+  announcementPath <- (Cfg.require config "announcements.working-path") :: IO String
   let jsonData = C.unpack (encode a)
-  putStrLn jsonData
+  writeFile announcementPath jsonData
+  putStrLn "Announcement is queued for sending."
