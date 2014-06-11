@@ -40,7 +40,7 @@ executable mapview-send
       base > 4 && < 5
     , configurator >= 0.2
     , directory >= 1.2
-    , fsnotify >= 0.1
+    , fsnotify >= 0.0.10 && < 0.1
     , system-filepath >= 0.4
     , text >= 1.1
     , transformers >= 0.3 && < 0.4
