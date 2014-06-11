@@ -69,8 +69,7 @@ application state pending = do
 talk :: WS.Connection -> MVar ServerState -> IO ()
 talk conn state = forever $
   withManager $ \man -> do
-    _ <- forkIO $
-      watchTree man (COS.fromText $ T.pack "/tmp/w8upd") (const True) handle
+    _ <- watchTree man (COS.fromText $ T.pack "/tmp/w8upd") (const True) handle
     msg <- WS.receiveData conn
     liftIO $ readMVar state >>= broadcast msg
   where
