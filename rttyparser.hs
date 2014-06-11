@@ -53,7 +53,6 @@ instance A.ToJSON Coordinates where
     A.object
     [ "latitude"  A..= lat
     , "longitude" A..= lon
-    , "instance"  A..= ("Coordinates" :: String)
     ]
 
 instance A.FromJSON Coordinates where
@@ -63,13 +62,11 @@ instance A.FromJSON Coordinates where
   parseJSON _          = mzero
 
 instance A.ToJSON RTTYLine where
-  toJSON (RTTYLine c coord alt t) =
+  toJSON (RTTYLine _ coord alt t) =
     A.object
-    [ "callsign"    A..= c
-    , "coordinates" A..= coord
+    [ "coordinates" A..= coord
     , "altitude"    A..= alt
     , "time"        A..= t
-    , "instance"    A..= ("MapUpdate" :: String)
     ]
 
 main :: IO ()
