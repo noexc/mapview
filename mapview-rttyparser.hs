@@ -154,10 +154,16 @@ parseLine :: Parser (IO RTTYLine)
 parseLine = do
   _ <- colon
   callsign' <- manyTill anyChar (try colon)
+
+  -- This is okay to do here. Any pattern match fail will get caught by
+  -- Trifecta and handled nicely.
   Right lat' <- integerOrDouble
   _ <- colon
+
+  -- And again.
   Right lon' <- integerOrDouble
   _ <- colon
+
   altitude' <- double
   _ <- colon
   time' <- many (token digit)
