@@ -16,6 +16,7 @@ executable mapview-rttyparser
   main-is:             mapview-rttyparser.hs
   build-depends:
       aeson >= 0.7
+    , ansi-wl-pprint >= 0.6.7 && < 0.7
     , attoparsec >= 0.10
     , base > 4 && < 5
     , bytestring >= 0.10
@@ -30,6 +31,7 @@ executable mapview-rttyparser
     , text >= 1.1
     , thyme >= 0.3.5
     , transformers >= 0.3 && < 0.4
+    , trifecta >= 1.4 && < 2
     , unix >= 2.7
 
   default-language:    Haskell2010

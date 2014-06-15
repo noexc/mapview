@@ -8,22 +8,24 @@ import Control.Monad (mzero)
 import Control.Monad.IO.Class
 import Control.Lens
 import qualified Data.Aeson as A
-import Data.Attoparsec.Text
 import qualified Data.Configurator as Cfg
 import Data.List (dropWhileEnd)
 import Data.Maybe (fromMaybe)
+import Data.Monoid (mempty)
 import Data.Thyme.Clock
 import Data.Thyme.Format
 import Data.Thyme.Format.Aeson ()
 import qualified Data.ByteString.Lazy.Char8 as C8L
 import qualified Data.Text as T
 import GHC.IO.Handle
-import Options.Applicative hiding (Parser)
+import Options.Applicative hiding (Failure, Parser, Success)
 import qualified Options.Applicative (Parser)
 import Shelly hiding (time)
 import System.Directory (createDirectoryIfMissing, doesFileExist)
 import qualified System.IO.Strict as S
 import System.Locale
+import Text.PrettyPrint.ANSI.Leijen (putDoc)
+import Text.Trifecta
 
 type Latitude  = Double
 type Longitude = Double
@@ -133,13 +135,13 @@ recordCoordinates p latest = do
 writeJson :: RTTYPaths -> Handle -> Sh ()
 writeJson p h = do
   liftIO $ hSetBuffering h NoBuffering
-  line <- liftIO $ hGetLine h
-  when (not (null line)) $ do
-      liftIO $ putStrLn $ "RECEIVED LINE: " ++ line
-      liftIO $ appendFile (rawLogPath p) (line ++ "\n")
-      case parseOnly parseLine (T.pack line) of
-        Left err -> liftIO $ putStrLn $ "ERROR: " ++ err
-        Right rttyLine'' -> do
+  line' <- liftIO $ hGetLine h
+  when (not (null line')) $ do
+      liftIO $ putStrLn $ "RECEIVED LINE: " ++ line'
+      liftIO $ appendFile (rawLogPath p) (line' ++ "\n")
+      case parseString parseLine mempty line' of
+        Failure e -> liftIO $ putDoc e
+        Success rttyLine'' -> do
           currentDay <- liftIO getCurrentTime
           rttyLine' <- liftIO rttyLine''
           let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
@@ -150,21 +152,13 @@ writeJson p h = do
 
 parseLine :: Parser (IO RTTYLine)
 parseLine = do
-  _ <- char ':'
-  callsign' <- takeWhile1 (/= ':')
-  _ <- char ':'
-  latitude' <- takeWhile1 (/= ':')
-  _ <- char ':'
-  longitude' <- takeWhile1 (/= ':')
-  _ <- char ':'
-  altitude' <- takeWhile1 (/= ':')
-  _ <- char ':'
-  time' <- takeWhile1 (/= ':')
-  return (
-    (return $ RTTYLine
-     callsign'
-     (Coordinates
-      (read $ T.unpack latitude'  :: Latitude)
-      (read $ T.unpack longitude' :: Longitude))
-     (read $ T.unpack altitude'  :: Meters)
-     (readTime defaultTimeLocale "%H%M%S" (T.unpack time'))) :: IO RTTYLine)
+  _ <- colon
+  callsign' <- manyTill anyChar (try colon)
+  Right lat' <- integerOrDouble
+  _ <- colon
+  Right lon' <- integerOrDouble
+  _ <- colon
+  altitude' <- double
+  _ <- colon
+  time' <- many (token digit)
+  return $ return $ RTTYLine (T.pack callsign') (Coordinates lat' lon') altitude' (readTime defaultTimeLocale "%H%M%S" time')
