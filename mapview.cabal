@@ -1,5 +1,5 @@
 name:                mapview
-version:             1.0.0
+version:             2.0.0
 synopsis:            View coordinates received via telemetry on a map in realtime. (Currently only RTTY)
 homepage:            https://github.com/W8UPD/mapview
 license:             MIT
