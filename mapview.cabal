@@ -12,8 +12,8 @@ build-type:          Simple
 -- extra-source-files:
 cabal-version:       >=1.10
 
-executable rttyparser
-  main-is:             rttyparser.hs
+executable mapview-rttyparser
+  main-is:             mapview-rttyparser.hs
   build-depends:
       aeson >= 0.7
     , attoparsec >= 0.10
@@ -24,6 +24,7 @@ executable rttyparser
     , lens >= 4
     , mtl > 2.1 && < 2.2
     , old-locale >= 1.0
+    , optparse-applicative >= 0.9
     , shelly >= 1.5
     , strict >= 0.3.2
     , text >= 1.1
