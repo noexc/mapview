@@ -76,11 +76,12 @@ instance A.ToJSON RTTYLine where
 data CLIOptions =
   CLIOptions { configFile :: String } deriving (Show)
 
-data RTTYPaths =
-  RTTYPaths { historyPath :: String
-            , rawLogPath :: String
-            , workingPath :: String
-            }
+data TelemetryOptions =
+  TelemetryOptions { historyPath :: String
+                   , rawLogPath :: String
+                   , workingPath :: String
+                   , minimodemFlags :: [String]
+                   }
 
 parseOptions :: Options.Applicative.Parser CLIOptions
 parseOptions =
@@ -109,11 +110,13 @@ runMain (CLIOptions configFile') = do
   workingPath' <- (Cfg.require config "telemetry.working-coordinates") :: IO String
   createDirectoryIfMissing True (baseDir workingPath')
 
-  let paths = RTTYPaths historyPath' rawLogPath' workingPath'
+  flags <- (Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.minimodem-flags") :: IO ([String])
+
+  let opts = TelemetryOptions historyPath' rawLogPath' workingPath' flags
 
   mapM_ createFileIfMissing [historyPath', rawLogPath', workingPath']
 
-  readRTTY paths
+  readRTTY opts
   where
     baseDir = init . dropWhileEnd (/= '/')
 
@@ -123,16 +126,16 @@ runMain (CLIOptions configFile') = do
         then return ()
         else writeFile p ""
 
-readRTTY :: RTTYPaths -> IO ()
-readRTTY p = shelly $ runHandle "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"] (writeJson p)
+readRTTY :: TelemetryOptions -> IO ()
+readRTTY p = shelly $ runHandle "minimodem" (map T.pack $ minimodemFlags p) (writeJson p)
 
-recordCoordinates :: RTTYPaths -> Coordinates -> IO ()
+recordCoordinates :: TelemetryOptions -> Coordinates -> IO ()
 recordCoordinates p latest = do
   old <- S.readFile (historyPath p)
   let cList = A.decode (C8L.pack old) :: Maybe [Coordinates]
   writeFile (historyPath p) (C8L.unpack $ A.encode (latest : fromMaybe [] cList))
 
-writeJson :: RTTYPaths -> Handle -> Sh ()
+writeJson :: TelemetryOptions -> Handle -> Sh ()
 writeJson p h = do
   liftIO $ hSetBuffering h NoBuffering
   line' <- liftIO $ hGetLine h

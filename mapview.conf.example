@@ -23,6 +23,12 @@ telemetry {
   # broadcasts. If this file changes, a JSON message will be sent out to all
   # connected clients, containing this file's contents.
   working-coordinates = "/tmp/w8upd/rtty-coordinates.json"
+
+  # mapview-rttyparser shells out to minimodem, an external dependency. These
+  # are the flags we pass to minimodem, when we shell to it. -r is mandatory
+  # and -q is strongly recommended to reduce noise in logs. The other options
+  # vary based on the mode and mode-specific settings being used.
+  minimodem-flags = ["-r", "-q", "rtty", "-S", "700", "-M", "870"]
 }
 
 announcements {

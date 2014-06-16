@@ -17,10 +17,9 @@ executable mapview-rttyparser
   build-depends:
       aeson >= 0.7
     , ansi-wl-pprint >= 0.6.7 && < 0.7
-    , attoparsec >= 0.10
     , base > 4 && < 5
     , bytestring >= 0.10
-    , configurator >= 0.2
+    , configurator >= 0.2.0.3
     , directory >= 1.2
     , lens >= 4
     , mtl > 2.1 && < 2.2
@@ -41,7 +40,7 @@ executable mapview-send
   main-is:             mapview-send.hs
   build-depends:
       base > 4 && < 5
-    , configurator >= 0.2
+    , configurator >= 0.2.0.3
     , directory >= 1.2
     , fsnotify >= 0.1
     , system-filepath >= 0.4
@@ -59,7 +58,7 @@ executable mapview-announce
       aeson >= 0.7
     , base > 4 && < 5
     , bytestring >= 0.10
-    , configurator >= 0.2
+    , configurator >= 0.2.0.3
     , directory >= 1.2
     , optparse-applicative >= 0.9
     , text >= 1.1
