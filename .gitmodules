@@ -1,0 +1,8 @@
+[submodule "gitdeps/configurator"]
+	path = gitdeps/configurator
+	url = https://github.com/W8UPD/configurator.git
+	branch = verbump
+[submodule "gitdeps/websockets"]
+	path = gitdeps/websockets
+	url = https://github.com/CodeBlock/websockets.git
+	branch = verbump
