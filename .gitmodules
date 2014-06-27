@@ -8,5 +8,5 @@
 	branch = verbump
 [submodule "gitdeps/trifecta"]
 	path = gitdeps/trifecta
-	url = https://github.com/CodeBlock/trifecta.git
-	branch = verbump
+	url = https://github.com/ekmett/trifecta.git
+	branch = master
