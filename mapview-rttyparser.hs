@@ -100,7 +100,7 @@ main = execParser opts >>= runMain
 
 runMain :: CLIOptions -> IO ()
 runMain (CLIOptions configFile') = do
-  config <- Cfg.load [Cfg.Required $ configFile']
+  config <- Cfg.load [Cfg.Required configFile']
   historyPath' <- (Cfg.require config "telemetry.coordinates-history") :: IO String
   createDirectoryIfMissing True (baseDir historyPath')
 
