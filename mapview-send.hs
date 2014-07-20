@@ -76,7 +76,7 @@ talk conn state = forever $
     handle :: Event -> IO ()
     handle (Modified fp _) = handle' fp
     handle (Added fp _)    = handle' fp
-    handle (Removed _ _)   = WS.sendTextData conn (T.pack "File got deleted somehow. Ut oh!")
+    handle (Removed _ _)   = WS.sendTextData conn (T.pack "File got deleted somehow. Uh oh!")
 
     handle' :: COS.FilePath -> IO ()
     handle' fp = do
