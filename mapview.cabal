@@ -1,5 +1,5 @@
 name:                mapview
-version:             2.0.1
+version:             2.0.2
 synopsis:            View coordinates received via telemetry on a map in realtime. (Currently only RTTY)
 homepage:            https://github.com/W8UPD/mapview
 license:             MIT
@@ -21,19 +21,20 @@ executable mapview-rttyparser
     , bytestring >= 0.10
     , configurator >= 0.3
     , directory >= 1.2
-    , lens >= 4
+    , lens >= 4.4 && < 5
+    , lens-aeson >= 1 && < 2
     , mtl > 2.1 && < 2.3
     , old-locale >= 1.0
     , optparse-applicative >= 0.9
-    -- TODO: Loosen parsers version when trifecta > 1.4.2 arrives.
-    , parsers == 0.11.0.3 
+    , parsers >= 0.11.0.3 && 0.3
     , shelly >= 1.5
     , strict >= 0.3.2
     , text >= 1.1
     , thyme >= 0.3.5
     , transformers >= 0.4 && < 0.5
-    , trifecta >= 1.4 && < 2
+    , trifecta >= 1.4.3 && < 2
     , unix >= 2.7
+    , comonad
 
   default-language:    Haskell2010
   ghc-options: -Wall -Werror -threaded -O2
