@@ -64,7 +64,7 @@ of JSON).
 ## mapview-psc
 
 mapview-psc is documented in its
-[own repository](https://github.com/w8upd/mapview-psc). It is a static site with
+[own repository](https://github.com/noexc/mapview-psc). It is a static site with
 the unique property that the javascript code that interacts with the above parts
 of MapView are written in [PureScript](http://docs.purescript.org/). This allows
 us to better reason about the code and gives us more confidence that the code
@@ -75,7 +75,7 @@ does what it should, since we can rely on a type system to keep us in check.
 * `cabal update && cabal install cabal-install`
 * `echo 'export PATH=~/.cabal/bin:$PATH' >> ~/.bashrc` # be able to access the new cabal version in the future.
 * `export PATH=~/.cabal/bin:$PATH'` # be able to access it right away, too
-* `git clone git://github.com/w8upd/mapview.git && cd mapview`
+* `git clone git://github.com/noexc/mapview.git && cd mapview`
 * `cabal sandbox init`
 * `cabal install`
 
