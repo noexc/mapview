@@ -3,8 +3,9 @@
 MapView is a system for plotting a stream of coordinates on a map, based on
 telemetry received from high altitude ballon launches.
 
-It is written by Ricky Elrod originally for the University of Akron Amateur
-Radio Club (W8UPD), and released under the MIT license.
+It is written and maintained by Ricky Elrod originally for the University of
+Akron Amateur Radio Club (W8UPD), and released under the MIT license. It is
+now maintained under the name of the Northeast Ohio Experimenter's Club.
 
 We use the system in conjunction with RTTY telemetry, but it is easy to modify
 the system to work with other forms of telemetry - anything minimodem can
@@ -43,8 +44,8 @@ data.
 
 `rttyparser.hs` is the first step of the system. It shells out to `minimodem`
 by using the awesome Shelly.hs library. Every time a newline is sent to it, it
-will attempt to parse it. If it does so successfully, it will convert the data
-it receives to JSON and save it to a file.
+will attempt to parse the line. If it does so successfully, it will convert the
+data it receives to JSON and save it to a file.
 
 Future revisions of `rttyparser.hs` could send it to some kind of public
 message bus instead, along with other telemetry data, so that clients could
@@ -82,7 +83,7 @@ does what it should, since we can rely on a type system to keep us in check.
 # Running it
 * `.cabal-sandbox/bin/rttyparser`
 * In another terminal, `.cabal-sandbox/bin/mapview-send`
-* Go to http://localhost:8088/ in a browser
+* Follow directions in the [mapview-psc repository](https://github.com/noexc/mapview-psc)
 * Then wait.
 
 # RTTY Messages
