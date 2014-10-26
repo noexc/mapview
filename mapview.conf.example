@@ -43,3 +43,11 @@ announcements {
   # a way that mapview-send understands.
   working-path = "/var/tmp/w8upd/latest-announcement.json"
 }
+
+websockets {
+  # This defines the port that the websockets server should listen on.
+  port = 9160
+
+  # This defines the IP to listen on.
+  host = "0.0.0.0"
+}

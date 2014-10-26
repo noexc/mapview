@@ -3,6 +3,8 @@ import Control.Exception (finally)
 import Control.Concurrent
 import Control.Monad (forM_, forever, when)
 import Control.Monad.IO.Class (liftIO)
+import qualified Data.Configurator as Cfg
+import Data.List (dropWhileEnd)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.UUID as UUID
@@ -10,11 +12,33 @@ import qualified Data.UUID.V4 as UUIDv4
 import qualified Data.Text.IO as T
 import qualified Filesystem.Path.CurrentOS as COS
 import qualified Network.WebSockets as WS
-import System.Directory (doesFileExist)
+import Options.Applicative hiding (Failure, Parser, Success)
+import qualified Options.Applicative (Parser)
+import System.Directory (createDirectoryIfMissing, doesFileExist)
 import System.FSNotify
 
 type Client = (String, WS.Connection)
 type ServerState = [Client]
+
+-- TODO: These are defined in mapview-rttyparser too. Pull out into a module.
+data TelemetryOptions =
+  TelemetryOptions { historyPath :: String
+                   , _rawLogPath :: String
+                   , workingPath :: String
+                   , _minimodemFlags :: [String]
+                   }
+
+-- TODO: Same as above.
+data CLIOptions =
+  CLIOptions String deriving (Show)
+
+-- TODO: Same as above.
+parseOptions :: Options.Applicative.Parser CLIOptions
+parseOptions =
+  CLIOptions <$> strOption (long "conf"
+                            <> short 'c'
+                            <> metavar "CONFIG_FILE"
+                            <> value "mapview.conf")
 
 newServerState :: ServerState
 newServerState = []
@@ -30,13 +54,48 @@ broadcast message clients = do
   T.putStrLn message
   forM_ (map snd clients) (`WS.sendTextData` message)
 
-main :: IO ()
-main = do
-  state <- newMVar newServerState
-  WS.runServer "0.0.0.0" 9160 $ application state
+baseDir :: String -> String
+baseDir = init . dropWhileEnd (/= '/')
 
-application :: MVar ServerState -> WS.ServerApp
-application state pending = do
+main :: IO ()
+main = execParser opts >>= runMain
+  where
+    opts = info (helper <*> parseOptions)
+      ( fullDesc
+     <> progDesc "Listen for updates to files containing RTTY data \
+                 \and forward them along via websockets."
+     <> header "mapview-send - RTTY to WebSockets relay" )
+
+runMain :: CLIOptions -> IO ()
+runMain (CLIOptions configFile') = do
+  config <- Cfg.load [Cfg.Required configFile']
+  historyPath' <- (Cfg.require config "telemetry.coordinates-history") :: IO String
+  createDirectoryIfMissing True (baseDir historyPath')
+
+  rawLogPath' <- (Cfg.require config "telemetry.raw-log") :: IO String
+  createDirectoryIfMissing True (baseDir rawLogPath')
+
+  workingPath' <- (Cfg.require config "telemetry.working-coordinates") :: IO String
+  createDirectoryIfMissing True (baseDir workingPath')
+
+  flags <- (Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.minimodem-flags") :: IO ([String])
+  let opts = TelemetryOptions historyPath' rawLogPath' workingPath' flags
+  mapM_ createFileIfMissing [historyPath', rawLogPath', workingPath']
+
+  state <- newMVar newServerState
+
+  host <- (Cfg.require config "websockets.port") :: IO String
+  port <- (Cfg.require config "websockets.port") :: IO Int
+  WS.runServer host port $ application opts state
+  where
+    createFileIfMissing p = do
+      doesExist <- doesFileExist p
+      if doesExist
+        then return ()
+        else writeFile p ""
+
+application :: TelemetryOptions -> MVar ServerState -> WS.ServerApp
+application opts state pending = do
   conn <- WS.acceptRequest pending
   uuid <- UUIDv4.nextRandom
   liftIO $ putStrLn $ "New client: " ++ UUID.toString uuid
@@ -47,18 +106,18 @@ application state pending = do
       WS.sendTextData (snd client) ("Welcome!" :: Text)
       broadcast "someone joined" s'
 
-      l <- doesFileExist "/tmp/w8upd/coordinates-log.json"
+      l <- doesFileExist (historyPath opts)
       when l $ do
-        json <- T.readFile "/tmp/w8upd/coordinates-log.json"
+        json <- T.readFile (historyPath opts)
         WS.sendTextData (snd client) json
 
-      e <- doesFileExist "/tmp/w8upd/rtty-coordinates.json"
+      e <- doesFileExist (workingPath opts)
       when e $ do
-        json <- T.readFile "/tmp/w8upd/rtty-coordinates.json"
+        json <- T.readFile (workingPath opts)
         WS.sendTextData (snd client) json
 
       return s'
-    talk (snd client) state
+    talk opts (snd client) state
   where
     disconnect client = do
       -- Remove client and return new state
@@ -66,10 +125,10 @@ application state pending = do
         let s' = removeClient client s in return (s', s')
       broadcast "someone disconnected" s
 
-talk :: WS.Connection -> MVar ServerState -> IO ()
-talk conn state = forever $
+talk :: TelemetryOptions -> WS.Connection -> MVar ServerState -> IO ()
+talk opts conn state = forever $
   withManager $ \man -> do
-    _ <- watchTree man (COS.fromText $ T.pack "/tmp/w8upd") (const True) handle
+    _ <- watchTree man (COS.fromText $ T.pack (baseDir (workingPath opts))) (const True) handle
     msg <- WS.receiveData conn
     liftIO $ readMVar state >>= broadcast msg
   where
@@ -81,6 +140,6 @@ talk conn state = forever $
     handle' :: COS.FilePath -> IO ()
     handle' fp = do
       let filename = COS.encodeString fp
-      when (filename == "/tmp/w8upd/rtty-coordinates.json") $ do
-        json <- T.readFile "/tmp/w8upd/rtty-coordinates.json"
+      when (filename == baseDir (workingPath opts)) $ do
+        json <- T.readFile (baseDir (workingPath opts))
         WS.sendTextData conn json

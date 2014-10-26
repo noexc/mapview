@@ -46,6 +46,7 @@ executable mapview-send
     , configurator >= 0.3
     , directory >= 1.2
     , fsnotify >= 0.1
+    , optparse-applicative >= 0.9
     , system-filepath >= 0.4
     , text >= 1.1
     , transformers >= 0.4 && < 0.5
