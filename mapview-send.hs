@@ -4,7 +4,6 @@ import Control.Concurrent
 import Control.Monad (forM_, forever, when)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Configurator as Cfg
-import Data.List (dropWhileEnd)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.UUID as UUID
@@ -13,32 +12,13 @@ import qualified Data.Text.IO as T
 import qualified Filesystem.Path.CurrentOS as COS
 import qualified Network.WebSockets as WS
 import Options.Applicative hiding (Failure, Parser, Success)
-import qualified Options.Applicative (Parser)
-import System.Directory (createDirectoryIfMissing, doesFileExist)
+import System.Directory (doesFileExist)
 import System.FSNotify
+
+import W8UPD.Mapview.Types
 
 type Client = (String, WS.Connection)
 type ServerState = [Client]
-
--- TODO: These are defined in mapview-rttyparser too. Pull out into a module.
-data TelemetryOptions =
-  TelemetryOptions { historyPath :: String
-                   , _rawLogPath :: String
-                   , workingPath :: String
-                   , _minimodemFlags :: [String]
-                   }
-
--- TODO: Same as above.
-data CLIOptions =
-  CLIOptions String deriving (Show)
-
--- TODO: Same as above.
-parseOptions :: Options.Applicative.Parser CLIOptions
-parseOptions =
-  CLIOptions <$> strOption (long "conf"
-                            <> short 'c'
-                            <> metavar "CONFIG_FILE"
-                            <> value "mapview.conf")
 
 newServerState :: ServerState
 newServerState = []
@@ -54,9 +34,6 @@ broadcast message clients = do
   T.putStrLn message
   forM_ (map snd clients) (`WS.sendTextData` message)
 
-baseDir :: String -> String
-baseDir = init . dropWhileEnd (/= '/')
-
 main :: IO ()
 main = execParser opts >>= runMain
   where
@@ -67,32 +44,14 @@ main = execParser opts >>= runMain
      <> header "mapview-send - RTTY to WebSockets relay" )
 
 runMain :: CLIOptions -> IO ()
-runMain (CLIOptions configFile') = do
-  config <- Cfg.load [Cfg.Required configFile']
-  historyPath' <- (Cfg.require config "telemetry.coordinates-history") :: IO String
-  createDirectoryIfMissing True (baseDir historyPath')
-
-  rawLogPath' <- (Cfg.require config "telemetry.raw-log") :: IO String
-  createDirectoryIfMissing True (baseDir rawLogPath')
-
-  workingPath' <- (Cfg.require config "telemetry.working-coordinates") :: IO String
-  createDirectoryIfMissing True (baseDir workingPath')
-
-  flags <- (Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.minimodem-flags") :: IO ([String])
-  let opts = TelemetryOptions historyPath' rawLogPath' workingPath' flags
-  mapM_ createFileIfMissing [historyPath', rawLogPath', workingPath']
+runMain c = do
+  (config, opts) <- runConfig c
 
   state <- newMVar newServerState
 
-  host <- (Cfg.require config "websockets.port") :: IO String
+  host <- (Cfg.require config "websockets.host") :: IO String
   port <- (Cfg.require config "websockets.port") :: IO Int
   WS.runServer host port $ application opts state
-  where
-    createFileIfMissing p = do
-      doesExist <- doesFileExist p
-      if doesExist
-        then return ()
-        else writeFile p ""
 
 application :: TelemetryOptions -> MVar ServerState -> WS.ServerApp
 application opts state pending = do

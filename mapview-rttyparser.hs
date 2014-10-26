@@ -8,8 +8,6 @@ import Control.Monad (mzero)
 import Control.Monad.IO.Class
 import Control.Lens
 import qualified Data.Aeson as A
-import qualified Data.Configurator as Cfg
-import Data.List (dropWhileEnd)
 import Data.Maybe (fromMaybe)
 import Data.Monoid (mempty)
 import Data.Thyme.Clock
@@ -19,13 +17,13 @@ import qualified Data.ByteString.Lazy.Char8 as C8L
 import qualified Data.Text as T
 import GHC.IO.Handle
 import Options.Applicative hiding (Failure, Parser, Success)
-import qualified Options.Applicative (Parser)
 import Shelly hiding (time)
-import System.Directory (createDirectoryIfMissing, doesFileExist)
 import qualified System.IO.Strict as S
 import System.Locale
 import Text.PrettyPrint.ANSI.Leijen (putDoc)
 import Text.Trifecta
+
+import W8UPD.Mapview.Types
 
 type Latitude  = Double
 type Longitude = Double
@@ -73,23 +71,6 @@ instance A.ToJSON RTTYLine where
     , "time"        A..= t
     ]
 
-data CLIOptions =
-  CLIOptions { configFile :: String } deriving (Show)
-
-data TelemetryOptions =
-  TelemetryOptions { historyPath :: String
-                   , rawLogPath :: String
-                   , workingPath :: String
-                   , minimodemFlags :: [String]
-                   }
-
-parseOptions :: Options.Applicative.Parser CLIOptions
-parseOptions =
-  CLIOptions <$> strOption (long "conf"
-                            <> short 'c'
-                            <> metavar "CONFIG_FILE"
-                            <> value "mapview.conf")
-
 main :: IO ()
 main = execParser opts >>= runMain
   where
@@ -99,32 +80,7 @@ main = execParser opts >>= runMain
      <> header "mapview-rttyparser - Read RTTY telemetry from minimodem" )
 
 runMain :: CLIOptions -> IO ()
-runMain (CLIOptions configFile') = do
-  config <- Cfg.load [Cfg.Required configFile']
-  historyPath' <- (Cfg.require config "telemetry.coordinates-history") :: IO String
-  createDirectoryIfMissing True (baseDir historyPath')
-
-  rawLogPath' <- (Cfg.require config "telemetry.raw-log") :: IO String
-  createDirectoryIfMissing True (baseDir rawLogPath')
-
-  workingPath' <- (Cfg.require config "telemetry.working-coordinates") :: IO String
-  createDirectoryIfMissing True (baseDir workingPath')
-
-  flags <- (Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.minimodem-flags") :: IO ([String])
-
-  let opts = TelemetryOptions historyPath' rawLogPath' workingPath' flags
-
-  mapM_ createFileIfMissing [historyPath', rawLogPath', workingPath']
-
-  readRTTY opts
-  where
-    baseDir = init . dropWhileEnd (/= '/')
-
-    createFileIfMissing p = do
-      doesExist <- doesFileExist p
-      if doesExist
-        then return ()
-        else writeFile p ""
+runMain c = snd <$> (runConfig c) >>= readRTTY
 
 readRTTY :: TelemetryOptions -> IO ()
 readRTTY p = shelly $ runHandle "minimodem" (map T.pack $ minimodemFlags p) (writeJson p)
