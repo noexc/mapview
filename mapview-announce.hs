@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- Module      :  W8UPD.MapView.Announce.Main
+-- Module      :  KD8ZRC.MapView.Announce.Main
 -- Copyright   :  (c) 2014 Ricky Elrod
 --
 -- Maintainer  :  Ricky Elrod <ricky@elrod.me>

@@ -15,7 +15,7 @@ import Options.Applicative hiding (Failure, Parser, Success)
 import System.Directory (doesFileExist)
 import System.FSNotify
 
-import W8UPD.Mapview.Types
+import KD8ZRC.Mapview.Types
 
 type Client = (String, WS.Connection)
 type ServerState = [Client]

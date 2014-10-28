@@ -23,7 +23,7 @@ import System.Locale
 import Text.PrettyPrint.ANSI.Leijen (putDoc)
 import Text.Trifecta
 
-import W8UPD.Mapview.Types
+import KD8ZRC.Mapview.Types
 
 type Latitude  = Double
 type Longitude = Double

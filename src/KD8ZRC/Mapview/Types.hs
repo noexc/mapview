@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
-module W8UPD.Mapview.Types where
+module KD8ZRC.Mapview.Types where
 
 import Control.Lens
 import qualified Data.Configurator as Cfg
