@@ -99,6 +99,6 @@ talk opts conn state = forever $
     handle' :: COS.FilePath -> IO ()
     handle' fp = do
       let filename = COS.encodeString fp
-      when (filename == baseDir (workingPath opts)) $ do
-        json <- T.readFile (baseDir (workingPath opts))
+      when (filename == workingPath opts) $ do
+        json <- T.readFile (workingPath opts)
         WS.sendTextData conn json
