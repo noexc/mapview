@@ -53,14 +53,14 @@ makeLenses ''RTTYLine
 instance A.ToJSON Coordinates where
   toJSON (Coordinates lat lon) =
     A.object
-    [ "latitude"  A..= lat
-    , "longitude" A..= lon
+    [ "lat"  A..= lat
+    , "lon" A..= lon
     ]
 
 instance A.FromJSON Coordinates where
   parseJSON (A.Object v) = Coordinates <$>
-                             v A..: "latitude"
-                         <*> v A..: "longitude"
+                             v A..: "lat"
+                         <*> v A..: "lon"
   parseJSON _          = mzero
 
 instance A.ToJSON RTTYLine where
