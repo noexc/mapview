@@ -16,6 +16,7 @@ import Data.Thyme.Format.Aeson ()
 import qualified Data.ByteString.Lazy.Char8 as C8L
 import qualified Data.Text as T
 import GHC.IO.Handle
+import Linear.V3
 import Options.Applicative hiding (Failure, Parser, Success)
 import Shelly hiding (time)
 import qualified System.IO.Strict as S
@@ -40,11 +41,14 @@ data CoordinatesList = CoordinatesList {
     coordinatesList :: [Coordinates]
     } deriving Show
 
+newtype MagField = MagField (V3 Double) deriving (Show)
+
 data RTTYLine = RTTYLine {
     _callsign   :: T.Text
   , _coordinates :: Coordinates
   , _altitude   :: Meters
   , _time       :: UTCTime
+  , _magnetic   :: MagField
   } deriving Show
 
 makeLenses ''RTTYLine
@@ -53,22 +57,31 @@ makeLenses ''RTTYLine
 instance A.ToJSON Coordinates where
   toJSON (Coordinates lat lon) =
     A.object
-    [ "lat"  A..= lat
+    [ "lat" A..= lat
     , "lon" A..= lon
+    ]
+
+instance A.ToJSON MagField where
+  toJSON (MagField (V3 x y z)) =
+    A.object
+    [ "x" A..= x
+    , "y" A..= y
+    , "z" A..= z
     ]
 
 instance A.FromJSON Coordinates where
   parseJSON (A.Object v) = Coordinates <$>
                              v A..: "lat"
                          <*> v A..: "lon"
-  parseJSON _          = mzero
+  parseJSON _            = mzero
 
 instance A.ToJSON RTTYLine where
-  toJSON (RTTYLine _ coord alt t) =
+  toJSON (RTTYLine _ coord alt t mag) =
     A.object
-    [ "coordinates" A..= coord
-    , "altitude"    A..= alt
-    , "time"        A..= t
+    [ "coordinates"    A..= coord
+    , "altitude"       A..= alt
+    , "time"           A..= t
+    , "magnetic_field" A..= mag
     ]
 
 main :: IO ()
@@ -109,6 +122,9 @@ writeJson p h = do
           liftIO $ recordCoordinates p (rttyLine ^. coordinates)
   writeJson p h
 
+-- | Input is in the following format:
+--
+-- >>> :W8UPD:41.09347:-80.74683:237.0:032553:656:-40:83:
 parseLine :: Parser (IO RTTYLine)
 parseLine = do
   _ <- colon
@@ -126,4 +142,17 @@ parseLine = do
   altitude' <- double
   _ <- colon
   time' <- many (token digit)
-  return $ return $ RTTYLine (T.pack callsign') (Coordinates lat' lon') altitude' (readTime defaultTimeLocale "%H%M%S" time')
+
+  magX <- double
+  _ <- colon
+  magY <- double
+  _ <- colon
+  magZ <- double
+  _ <- colon
+
+  return $ return $ RTTYLine
+    (T.pack callsign')
+    (Coordinates lat' lon')
+    altitude'
+    (readTime defaultTimeLocale "%H%M%S" time')
+    (MagField (V3 magX magY magZ))
