@@ -41,7 +41,8 @@ data CoordinatesList = CoordinatesList {
     coordinatesList :: [Coordinates]
     } deriving Show
 
-newtype MagField = MagField (V3 Double) deriving (Show)
+newtype MagField = MagField (V3 Integer) deriving (Show)
+newtype Celsius = Celsius Double deriving (Show)
 
 data RTTYLine = RTTYLine {
     _callsign   :: T.Text
@@ -49,6 +50,7 @@ data RTTYLine = RTTYLine {
   , _altitude   :: Meters
   , _time       :: UTCTime
   , _magnetic   :: MagField
+  , _temperature :: Celsius
   } deriving Show
 
 makeLenses ''RTTYLine
@@ -76,12 +78,13 @@ instance A.FromJSON Coordinates where
   parseJSON _            = mzero
 
 instance A.ToJSON RTTYLine where
-  toJSON (RTTYLine _ coord alt t mag) =
+  toJSON (RTTYLine _ coord alt t mag (Celsius c)) =
     A.object
     [ "coordinates"    A..= coord
     , "altitude"       A..= alt
     , "time"           A..= t
     , "magnetic_field" A..= mag
+    , "temperature"    A..= c
     ]
 
 main :: IO ()
@@ -142,12 +145,14 @@ parseLine = do
   altitude' <- double
   _ <- colon
   time' <- many (token digit)
-
-  magX <- double
   _ <- colon
-  magY <- double
+  magX <- integer
   _ <- colon
-  magZ <- double
+  magY <- integer
+  _ <- colon
+  magZ <- integer
+  _ <- colon
+  celsius <- double
   _ <- colon
 
   return $ return $ RTTYLine
@@ -156,3 +161,4 @@ parseLine = do
     altitude'
     (readTime defaultTimeLocale "%H%M%S" time')
     (MagField (V3 magX magY magZ))
+    (Celsius celsius)
