@@ -166,5 +166,4 @@ parseLine = do
     (Celsius celsius)
 
 eitherToNum :: (Num b, Integral a) => Either a b -> b
-eitherToNum (Left a)  = fromIntegral a
-eitherToNum (Right a) = a
+eitherToNum = either fromIntegral id
