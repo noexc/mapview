@@ -133,26 +133,28 @@ parseLine = do
   _ <- colon
   callsign' <- manyTill anyChar (try colon)
 
-  -- This is okay to do here. Any pattern match fail will get caught by
-  -- Trifecta and handled nicely.
-  Right lat' <- integerOrDouble
+  lat' <- eitherToNum <$> integerOrDouble
   _ <- colon
 
-  -- And again.
-  Right lon' <- integerOrDouble
+  lon' <- eitherToNum <$> integerOrDouble
   _ <- colon
 
-  altitude' <- double
+  altitude' <- eitherToNum <$> integerOrDouble
   _ <- colon
+
   time' <- many (token digit)
   _ <- colon
+
   magX <- integer
   _ <- colon
+
   magY <- integer
   _ <- colon
+
   magZ <- integer
   _ <- colon
-  celsius <- integerOrDouble
+
+  celsius <- eitherToNum <$> integerOrDouble
   _ <- colon
 
   return $ return $ RTTYLine
@@ -161,7 +163,7 @@ parseLine = do
     altitude'
     (readTime defaultTimeLocale "%H%M%S" time')
     (MagField (V3 magX magY magZ))
-    (Celsius (eitherToNum celsius))
+    (Celsius celsius)
 
 eitherToNum :: (Num b, Integral a) => Either a b -> b
 eitherToNum (Left a)  = fromIntegral a
