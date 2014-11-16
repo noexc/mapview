@@ -152,7 +152,7 @@ parseLine = do
   _ <- colon
   magZ <- integer
   _ <- colon
-  celsius <- double
+  celsius <- integerOrDouble
   _ <- colon
 
   return $ return $ RTTYLine
@@ -161,4 +161,8 @@ parseLine = do
     altitude'
     (readTime defaultTimeLocale "%H%M%S" time')
     (MagField (V3 magX magY magZ))
-    (Celsius celsius)
+    (Celsius (eitherToNum celsius))
+
+eitherToNum :: (Num b, Integral a) => Either a b -> b
+eitherToNum (Left a)  = fromIntegral a
+eitherToNum (Right a) = a
