@@ -23,7 +23,9 @@ main = execParser opts >>= runMain
      <> header "mapview-generate-charts - Generate charts from raw telemetry")
 
 runMain :: CLIOptions -> IO ()
-runMain c = snd <$> (runConfig c) >>= altitudeChart
+runMain c = mapM_ (\x -> snd <$> (runConfig c) >>= x) charts
+  where
+    charts = [altitudeChart, temperatureChart]
 
 -- | Reparse all data from the raw RTTY log, discarding any failed parses.
 readData :: TelemetryOptions -> IO [IO RTTYLine]
