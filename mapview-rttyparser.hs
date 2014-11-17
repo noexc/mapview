@@ -1,6 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Main where
 
 import Control.Applicative
@@ -31,7 +29,7 @@ main = execParser opts >>= runMain
      <> header "mapview-rttyparser - Read RTTY telemetry from minimodem" )
 
 runMain :: CLIOptions -> IO ()
-runMain c = snd <$> (runConfig c) >>= readRTTY
+runMain c = snd <$> runConfig c >>= readRTTY
 
 readRTTY :: TelemetryOptions -> IO ()
 readRTTY p = shelly $ runHandle "minimodem" (map T.pack $ minimodemFlags p) (writeJson p)
@@ -46,7 +44,7 @@ writeJson :: TelemetryOptions -> Handle -> Sh ()
 writeJson p h = do
   liftIO $ hSetBuffering h NoBuffering
   line' <- liftIO $ hGetLine h
-  when (not (null line')) $ do
+  unless (null line') $ do
       liftIO $ putStrLn $ "RECEIVED LINE: " ++ line'
       liftIO $ appendFile (rawLogPath p) (line' ++ "\n")
       case parseString parseLine mempty line' of

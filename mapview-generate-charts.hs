@@ -1,6 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Main where
 
 import Control.Applicative
@@ -23,7 +20,7 @@ main = execParser opts >>= runMain
      <> header "mapview-generate-charts - Generate charts from raw telemetry")
 
 runMain :: CLIOptions -> IO ()
-runMain c = mapM_ (\x -> snd <$> (runConfig c) >>= x) charts
+runMain c = mapM_ (snd <$> runConfig c >>=) charts
   where
     charts = [altitudeChart, temperatureChart]
 

@@ -3,7 +3,7 @@
 module KD8ZRC.Mapview.Types where
 
 import Control.Lens
-import Control.Monad (mzero)
+import Control.Monad (mzero, unless)
 import qualified Data.Aeson as A
 import qualified Data.Configurator as Cfg
 import qualified Data.Configurator.Types as Cfg
@@ -102,28 +102,26 @@ parseOptions =
 runConfig :: CLIOptions -> IO (Cfg.Config, TelemetryOptions)
 runConfig (CLIOptions configFile') = do
   config <- Cfg.load [Cfg.Required configFile']
-  historyPath' <- (Cfg.require config "telemetry.coordinates-history") :: IO String
+  historyPath' <- Cfg.require config "telemetry.coordinates-history"
   createDirectoryIfMissing True (baseDir historyPath')
 
-  rawLogPath' <- (Cfg.require config "telemetry.raw-log") :: IO String
+  rawLogPath' <- Cfg.require config "telemetry.raw-log"
   createDirectoryIfMissing True (baseDir rawLogPath')
 
-  workingPath' <- (Cfg.require config "telemetry.working-coordinates") :: IO String
+  workingPath' <- Cfg.require config "telemetry.working-coordinates"
   createDirectoryIfMissing True (baseDir workingPath')
 
-  flags <- (Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.minimodem-flags") :: IO ([String])
+  flags <- Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.minimodem-flags"
   let opts = TelemetryOptions historyPath' rawLogPath' workingPath' flags
   return (config, opts)
 
 createMissingDirectories :: TelemetryOptions -> IO ()
-createMissingDirectories (TelemetryOptions h r w _) = do
+createMissingDirectories (TelemetryOptions h r w _) =
   mapM_ createFileIfMissing [h, r, w]
   where
     createFileIfMissing p = do
       doesExist <- doesFileExist p
-      if doesExist
-        then return ()
-        else writeFile p ""
+      unless doesExist $ writeFile p ""
 
 baseDir :: String -> String
 baseDir = init . dropWhileEnd (/= '/')

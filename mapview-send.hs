@@ -49,8 +49,8 @@ runMain c = do
 
   state <- newMVar newServerState
 
-  host <- (Cfg.require config "websockets.host") :: IO String
-  port <- (Cfg.require config "websockets.port") :: IO Int
+  host <- Cfg.require config "websockets.host"
+  port <- Cfg.require config "websockets.port"
   WS.runServer host port $ application opts state
 
 application :: TelemetryOptions -> MVar ServerState -> WS.ServerApp
