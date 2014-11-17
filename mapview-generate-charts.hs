@@ -33,8 +33,9 @@ main = execParser opts >>= runMain
 runMain :: FullOptions -> IO ()
 runMain opts@(FullOptions cli chartOpts) = do
   telemOpts <- snd <$> runConfig cli
+  telemetry <- sequence <$> readData telemOpts
   when (wiki chartOpts) $ putStrLn "<gallery>"
-  mapM_ (\x -> x opts telemOpts) charts
+  mapM_ (\x -> x opts telemetry) charts
   when (wiki chartOpts) $ putStrLn "</gallery>"
   where
     charts = [altitudeChart, temperatureChart]
@@ -50,11 +51,8 @@ readData tel = do
     unsafeSuccessExtract (Success s) = s
     unsafeSuccessExtract _           = error "Attempted to extract Success from Failure"
 
-altitudeChart :: FullOptions -> TelemetryOptions -> IO ()
-altitudeChart (FullOptions _ chart) t = do
-  -- TODO: Pass parse data instead, so we don't read from the file a bunch of
-  -- times.
-  parses <- sequence <$> readData t
+altitudeChart :: FullOptions -> IO [RTTYLine] -> IO ()
+altitudeChart (FullOptions _ chart) parses = do
   p <- parses >>= plot'
   toFile def "charts/altitude.svg" $ do
     layout_title .= "Altitude"
@@ -62,15 +60,12 @@ altitudeChart (FullOptions _ chart) t = do
   when (wiki chart) $ putStrLn "File:Altitude.svg|Altitude data"
   where
     plot' :: [RTTYLine] -> IO (EC (Layout Int Double) ())
-    plot' parses = do
-      let datapoints = zip [1..] (map _altitude parses)
+    plot' parses' = do
+      let datapoints = zip [1..] (map _altitude parses')
       return $ plot (line "meters" [datapoints])
 
-temperatureChart :: FullOptions -> TelemetryOptions -> IO ()
-temperatureChart (FullOptions _ chart) t = do
-  -- TODO: Pass parse data instead, so we don't read from the file a bunch of
-  -- times.
-  parses <- sequence <$> readData t
+temperatureChart :: FullOptions -> IO [RTTYLine] -> IO ()
+temperatureChart (FullOptions _ chart) parses = do
   p <- parses >>= plot'
   toFile def "charts/temperature.svg" $ do
     layout_title .= "Temperature"
@@ -79,6 +74,6 @@ temperatureChart (FullOptions _ chart) t = do
   where
     cExtract (Celsius c) = c
     plot' :: [RTTYLine] -> IO (EC (Layout Int Double) ())
-    plot' parses = do
-      let datapoints = zip [1..] (map (cExtract . _temperature) parses)
+    plot' parses' = do
+      let datapoints = zip [1..] (map (cExtract . _temperature) parses')
       return $ plot (line "°C" [datapoints])
