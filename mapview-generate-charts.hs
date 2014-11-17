@@ -52,12 +52,12 @@ readData tel = do
     unsafeSuccessExtract _           = error "Attempted to extract Success from Failure"
 
 altitudeChart :: FullOptions -> IO [RTTYLine] -> IO ()
-altitudeChart (FullOptions _ chart) parses = do
+altitudeChart (FullOptions _ _) parses = do
   p <- parses >>= plot'
+  putStrLn "File:Altitude.svg|Altitude data"
   toFile def "charts/altitude.svg" $ do
     layout_title .= "Altitude"
     p
-  when (wiki chart) $ putStrLn "File:Altitude.svg|Altitude data"
   where
     plot' :: [RTTYLine] -> IO (EC (Layout Int Double) ())
     plot' parses' = do
@@ -65,12 +65,12 @@ altitudeChart (FullOptions _ chart) parses = do
       return $ plot (line "meters" [datapoints])
 
 temperatureChart :: FullOptions -> IO [RTTYLine] -> IO ()
-temperatureChart (FullOptions _ chart) parses = do
+temperatureChart (FullOptions _ _) parses = do
   p <- parses >>= plot'
+  putStrLn "File:Temperature.svg|Temperature data (°C)"
   toFile def "charts/temperature.svg" $ do
     layout_title .= "Temperature"
     p
-  when (wiki chart) $ putStrLn "File:Temperature.svg|Temperature data (°C)"
   where
     cExtract (Celsius c) = c
     plot' :: [RTTYLine] -> IO (EC (Layout Int Double) ())
