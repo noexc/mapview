@@ -44,7 +44,7 @@ altitudeChart t = do
   -- times.
   parses <- sequence <$> readData t
   p <- parses >>= plot'
-  toFile def "altitude.svg" $ do
+  toFile def "charts/altitude.svg" $ do
     layout_title .= "Altitude"
     p
   where
@@ -59,7 +59,7 @@ temperatureChart t = do
   -- times.
   parses <- sequence <$> readData t
   p <- parses >>= plot'
-  toFile def "temperature.svg" $ do
+  toFile def "charts/temperature.svg" $ do
     layout_title .= "Temperature"
     p
   where
