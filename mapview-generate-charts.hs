@@ -88,12 +88,12 @@ magnetChart (FullOptions _ _) parses = do
     x' >> y' >> z'
   where
     magExtract (MagField x) = x
-    magXYZ :: [RTTYLine] -> IO ((EC (Layout Int Integer) ()), (EC (Layout Int Integer) ()), (EC (Layout Int Integer) ()))
+    magXYZ :: [RTTYLine] -> IO (EC (Layout Int Integer) (), EC (Layout Int Integer) (), EC (Layout Int Integer) ())
     magXYZ parses' = do
       -- TODO: Is there a less redundant way to do this?
-      let mX = zip [1..] (map (\m -> (magExtract (m ^. magnetic) ^. _x)) parses')
-          mY = zip [1..] (map (\m -> (magExtract (m ^. magnetic) ^. _y)) parses')
-          mZ = zip [1..] (map (\m -> (magExtract (m ^. magnetic) ^. _z)) parses')
-      return $ ( plot (line "x" [mX])
-               , plot (line "y" [mY])
-               , plot (line "z" [mZ]))
+      let mX = zip [1..] (map (\m -> magExtract (m ^. magnetic) ^. _x) parses')
+          mY = zip [1..] (map (\m -> magExtract (m ^. magnetic) ^. _y) parses')
+          mZ = zip [1..] (map (\m -> magExtract (m ^. magnetic) ^. _z) parses')
+      return ( plot (line "x" [mX])
+             , plot (line "y" [mY])
+             , plot (line "z" [mZ]))
