@@ -23,10 +23,10 @@ it works is like this:
 [a receiver radio] -> [rttyparser.hs] -> [websocket-send.hs] -> [clients]
 
 It depends on `minimodem` and calls out to it using the Shelly library for
-Haskell. On each successfully received line, `rttyparser` will output a JSON
-file.
+Haskell. On each successfully received line, `mapview-rttyparser` will output a
+JSON file.
 
-In `websocket-send`, we use the fsnotify Haskell library to determine when the
+In `mapview-send`, we use the fsnotify Haskell library to determine when the
 JSON file changes. When a change is detected, we push out new coordinates to
 clients via websockets. The client updates its Google Map and displays the new
 location.
@@ -40,27 +40,38 @@ MapView is broken into three parts: the parser, the websocket broadcaster, and
 the client side code that listens for websocket broadcasts with new telemetry
 data.
 
-## `rttyparser.hs`
+## `mapview-rttyparser`
 
-`rttyparser.hs` is the first step of the system. It shells out to `minimodem`
-by using the awesome Shelly.hs library. Every time a newline is sent to it, it
-will attempt to parse the line. If it does so successfully, it will convert the
-data it receives to JSON and save it to a file.
+`mapview-rttyparser` is the first step of the system. It shells out to
+`minimodem` by using the awesome Shelly.hs library. Every time a newline is sent
+to it, it will attempt to parse the line. If it does so successfully, it will
+convert the data it receives to JSON and save it to a file.
 
-Future revisions of `rttyparser.hs` could send it to some kind of public
+Future revisions of `mapview-rttyparser` could send it to some kind of public
 message bus instead, along with other telemetry data, so that clients could
 consume more data and work with it as they please.
 
-This is all that `rttyparser.hs` does: parse, convert to machine-readable, save.
+This is all that `mapview-rttyparser` does: parse, convert to machine-readable,
+save.
 
-## `websocket-send.hs`
+## `mapview-send`
 
-`websocket-send.hs` listens for changes to the file that `rttyparser.hs` writes
+`mapview-send` listens for changes to the file that `mapview-rttyparser` writes
 to. (Future revisions of it could consume a public message bus and pass data
 along from that source). It also allows clients to connect to it via websockets.
 When it detects a change to the file it monitors, it passes the new contents of
 the file to all clients who are connected (i.e., the clients receive a new block
 of JSON).
+
+## `mapview-generate-charts`
+
+`mapview-generate-charts` exists for quickly re-processing telemetry data and
+generating charts of parses which were deemed by Trifecta to be a success.
+Examples of these charts can be found on the
+[NBP-1 page](https://noexc.org/wiki/NBP1#Received_Data).
+
+Originally written for summarizing data after a launch, this tool can also be
+used in the field to visualize what is happening to the balloon.
 
 ## mapview-psc
 
