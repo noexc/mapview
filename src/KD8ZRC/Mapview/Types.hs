@@ -3,11 +3,78 @@
 module KD8ZRC.Mapview.Types where
 
 import Control.Lens
+import Control.Monad (mzero)
+import qualified Data.Aeson as A
 import qualified Data.Configurator as Cfg
 import qualified Data.Configurator.Types as Cfg
 import Data.List (dropWhileEnd)
+import qualified Data.Text as T
+import Data.Thyme.Clock
+import Data.Thyme.Format.Aeson ()
+import Linear.V3
 import Options.Applicative
 import System.Directory (createDirectoryIfMissing, doesFileExist)
+
+type Latitude  = Double
+type Longitude = Double
+type Meters    = Double
+
+data Coordinates = Coordinates {
+    _latitude  :: Latitude
+  , _longitude :: Longitude
+  } deriving Show
+
+makeLenses ''Coordinates
+
+data CoordinatesList = CoordinatesList {
+    coordinatesList :: [Coordinates]
+    } deriving Show
+
+newtype MagField = MagField (V3 Integer) deriving (Show)
+newtype Celsius = Celsius Double deriving (Show)
+
+data RTTYLine = RTTYLine {
+    _callsign   :: T.Text
+  , _coordinates :: Coordinates
+  , _altitude   :: Meters
+  , _time       :: UTCTime
+  , _magnetic   :: MagField
+  , _temperature :: Celsius
+  } deriving Show
+
+makeLenses ''RTTYLine
+
+-- TODO: lens-aeson?
+instance A.ToJSON Coordinates where
+  toJSON (Coordinates lat lon) =
+    A.object
+    [ "lat" A..= lat
+    , "lon" A..= lon
+    ]
+
+instance A.ToJSON MagField where
+  toJSON (MagField (V3 x y z)) =
+    A.object
+    [ "x" A..= x
+    , "y" A..= y
+    , "z" A..= z
+    ]
+
+instance A.FromJSON Coordinates where
+  parseJSON (A.Object v) = Coordinates <$>
+                             v A..: "lat"
+                         <*> v A..: "lon"
+  parseJSON _            = mzero
+
+instance A.ToJSON RTTYLine where
+  toJSON (RTTYLine _ coord alt t mag (Celsius c)) =
+    A.object
+    [ "coordinates"    A..= coord
+    , "altitude"       A..= alt
+    , "time"           A..= t
+    , "magnetic_field" A..= mag
+    , "temperature"    A..= c
+    ]
 
 data TelemetryOptions =
   TelemetryOptions { historyPath :: String
