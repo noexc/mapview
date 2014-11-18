@@ -88,12 +88,15 @@ magnetChart (FullOptions _ _) parses = do
     x' >> y' >> z'
   where
     magExtract (MagField x) = x
+    f :: [(Int, V3 Integer)] -> ([(Int, Integer)], [(Int, Integer)], [(Int, Integer)])
+    f ms = (xs, ys, zs)
+      where
+        xs = fmap (fmap (^. _x)) ms
+        ys = fmap (fmap (^. _y)) ms
+        zs = fmap (fmap (^. _z)) ms
     magXYZ :: [RTTYLine] -> IO (EC (Layout Int Integer) (), EC (Layout Int Integer) (), EC (Layout Int Integer) ())
     magXYZ parses' = do
-      -- TODO: Is there a less redundant way to do this?
-      let mX = zip [1..] (map (\m -> magExtract (m ^. magnetic) ^. _x) parses')
-          mY = zip [1..] (map (\m -> magExtract (m ^. magnetic) ^. _y) parses')
-          mZ = zip [1..] (map (\m -> magExtract (m ^. magnetic) ^. _z) parses')
+      let (mX, mY, mZ) = f (parses' ^@.. reindexed (+1) (traversed <. magnetic . to magExtract))
       return ( plot (line "x" [mX])
              , plot (line "y" [mY])
              , plot (line "z" [mZ]))
