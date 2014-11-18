@@ -31,19 +31,6 @@ telemetry {
   minimodem-flags = ["-r", "-q", "rtty", "-S", "700", "-M", "870"]
 }
 
-announcements {
-  # mapview-send has the ability to send out important announcements. mapview-psc
-  # will show these as a banner near the top of the screen, while other clients
-  # may potentially show them in other ways.
-  #
-  # To do this, mapview-send listens for changes to a particular file, specified
-  # here.
-  #
-  # You can use the included `mapview-announce` program to write out this file in
-  # a way that mapview-send understands.
-  working-path = "/var/tmp/w8upd/latest-announcement.json"
-}
-
 websockets {
   # This defines the port that the websockets server should listen on.
   port = 9160
