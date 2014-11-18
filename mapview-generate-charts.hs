@@ -90,9 +90,9 @@ magnetChart (FullOptions _ _) parses = do
     magExtract (MagField x) = x
     f ms = (xs, ys, zs)
       where
-        xs = fmap (fmap (^. _x)) ms
-        ys = fmap (fmap (^. _y)) ms
-        zs = fmap (fmap (^. _z)) ms
+        xs = ms & mapped._2 %~ (^. _x)
+        ys = ms & mapped._2 %~ (^. _y)
+        zs = ms & mapped._2 %~ (^. _z)
     magXYZ parses' =
       let (mX, mY, mZ) = f (parses' ^@.. reindexed (+1) (traversed <. magnetic . to magExtract))
       in return ( plot (line "x" [mX])
