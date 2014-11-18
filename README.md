@@ -16,11 +16,11 @@ to work.
 
 # How it works
 
-MapView is a set of 2 Haskell programs that work together to get data to clients
+MapView is a set of Haskell programs that work together to get data to clients
 through the use of websockets, and client side code to view this data. The way
 it works is like this:
 
-[a receiver radio] -> [rttyparser.hs] -> [websocket-send.hs] -> [clients]
+[a receiver radio] -> [mapview-rttyparser] -> [mapview-send] -> [clients]
 
 It depends on `minimodem` and calls out to it using the Shelly library for
 Haskell. On each successfully received line, `mapview-rttyparser` will output a
