@@ -87,14 +87,13 @@ magnetChart (FullOptions _ _) parses = do
     layout_title .= "Magnetometer"
     x' >> y' >> z'
   where
-    magExtract (MagField x) = x
     f ms = (xs, ys, zs)
       where
         xs = ms & mapped._2 %~ (^. _x)
         ys = ms & mapped._2 %~ (^. _y)
         zs = ms & mapped._2 %~ (^. _z)
     magXYZ parses' =
-      let (mX, mY, mZ) = f (parses' ^@.. reindexed (+1) (traversed <. magnetic . to magExtract))
+      let (mX, mY, mZ) = f (parses' ^@.. reindexed (+1) (traversed <. magnetic . values))
       in return ( plot (line "x" [mX])
                 , plot (line "y" [mY])
                 , plot (line "z" [mZ])

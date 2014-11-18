@@ -23,15 +23,17 @@ data Coordinates = Coordinates {
     _latitude  :: Latitude
   , _longitude :: Longitude
   } deriving Show
-
 makeLenses ''Coordinates
 
 data CoordinatesList = CoordinatesList {
     coordinatesList :: [Coordinates]
     } deriving Show
 
-newtype MagField = MagField (V3 Integer) deriving (Show)
-newtype Celsius = Celsius Double deriving (Show)
+newtype MagField = MagField { _values :: V3 Integer } deriving (Show)
+makeLenses ''MagField
+
+newtype Celsius = Celsius { _degrees :: Double } deriving (Show)
+makeLenses ''Celsius
 
 data RTTYLine = RTTYLine {
     _callsign   :: T.Text
@@ -41,7 +43,6 @@ data RTTYLine = RTTYLine {
   , _magnetic   :: MagField
   , _temperature :: Celsius
   } deriving Show
-
 makeLenses ''RTTYLine
 
 -- TODO: lens-aeson?
