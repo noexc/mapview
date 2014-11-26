@@ -35,7 +35,7 @@ makeLenses ''MagField
 newtype Celsius = Celsius { _degrees :: Double } deriving (Show)
 makeLenses ''Celsius
 
-data RTTYLine = RTTYLine {
+data TelemetryLine = TelemetryLine {
     _callsign   :: T.Text
   , _coordinates :: Coordinates
   , _altitude   :: Meters
@@ -43,7 +43,7 @@ data RTTYLine = RTTYLine {
   , _magnetic   :: MagField
   , _temperature :: Celsius
   } deriving Show
-makeLenses ''RTTYLine
+makeLenses ''TelemetryLine
 
 -- TODO: lens-aeson?
 instance A.ToJSON Coordinates where
@@ -67,8 +67,8 @@ instance A.FromJSON Coordinates where
                          <*> v A..: "lon"
   parseJSON _            = mzero
 
-instance A.ToJSON RTTYLine where
-  toJSON (RTTYLine _ coord alt t mag (Celsius c)) =
+instance A.ToJSON TelemetryLine where
+  toJSON (TelemetryLine _ coord alt t mag (Celsius c)) =
     A.object
     [ "coordinates"    A..= coord
     , "altitude"       A..= alt

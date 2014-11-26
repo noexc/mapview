@@ -12,7 +12,7 @@ import KD8ZRC.Mapview.Types
 -- | Input is in the following format:
 --
 -- >>> :W8UPD:41.09347:-80.74683:237.0:032553:656:-40:83:
-parseLine :: Parser (IO RTTYLine)
+parseLine :: Parser (IO TelemetryLine)
 parseLine = do
   _ <- colon
   callsign' <- manyTill anyChar (try colon)
@@ -41,7 +41,7 @@ parseLine = do
   celsius <- eitherToNum <$> integerOrDouble
   _ <- colon
 
-  return $ return $ RTTYLine
+  return $ return $ TelemetryLine
     (T.pack callsign')
     (Coordinates lat' lon')
     altitude'

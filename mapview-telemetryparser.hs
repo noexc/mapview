@@ -25,14 +25,14 @@ main = execParser opts >>= runMain
   where
     opts = info (helper <*> parseOptions)
       ( fullDesc
-     <> progDesc "Read RTTY telemetry from minimodem"
-     <> header "mapview-rttyparser - Read RTTY telemetry from minimodem" )
+     <> progDesc "Read telemetry data from minimodem"
+     <> header "mapview-telemetryparser - Read telemetry data from minimodem" )
 
 runMain :: CLIOptions -> IO ()
-runMain c = snd <$> runConfig c >>= readRTTY
+runMain c = snd <$> runConfig c >>= readTelemetry
 
-readRTTY :: TelemetryOptions -> IO ()
-readRTTY p = shelly $ runHandle "minimodem" (map T.pack $ minimodemFlags p) (writeJson p)
+readTelemetry :: TelemetryOptions -> IO ()
+readTelemetry p = shelly $ runHandle "minimodem" (map T.pack $ minimodemFlags p) (writeJson p)
 
 recordCoordinates :: TelemetryOptions -> Coordinates -> IO ()
 recordCoordinates p latest = do
@@ -49,11 +49,11 @@ writeJson p h = do
       liftIO $ appendFile (rawLogPath p) (line' ++ "\n")
       case parseString parseLine mempty line' of
         Failure e -> liftIO $ putDoc e
-        Success rttyLine'' -> do
+        Success telemetryLine'' -> do
           currentDay <- liftIO getCurrentTime
-          rttyLine' <- liftIO rttyLine''
-          let rttyLine = time . _utctDay .~ currentDay ^. _utctDay $ rttyLine'
-          liftIO $ putStrLn $ "...which parsed into: " ++ show rttyLine
-          liftIO $ writeFile (workingPath p) (C8L.unpack $ A.encode rttyLine)
-          liftIO $ recordCoordinates p (rttyLine ^. coordinates)
+          telemetryLine' <- liftIO telemetryLine''
+          let telemetryLine = time . _utctDay .~ currentDay ^. _utctDay $ telemetryLine'
+          liftIO $ putStrLn $ "...which parsed into: " ++ show telemetryLine
+          liftIO $ writeFile (workingPath p) (C8L.unpack $ A.encode telemetryLine)
+          liftIO $ recordCoordinates p (telemetryLine ^. coordinates)
   writeJson p h

@@ -39,9 +39,9 @@ main = execParser opts >>= runMain
   where
     opts = info (helper <*> parseOptions)
       ( fullDesc
-     <> progDesc "Listen for updates to files containing RTTY data \
+     <> progDesc "Listen for updates to files containing Telemetry data \
                  \and forward them along via websockets."
-     <> header "mapview-send - RTTY to WebSockets relay" )
+     <> header "mapview-send - Telemetry to WebSockets relay" )
 
 runMain :: CLIOptions -> IO ()
 runMain c = do

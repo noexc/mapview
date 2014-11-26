@@ -1,6 +1,6 @@
 name:                mapview
 version:             2.0.2
-synopsis:            View coordinates received via telemetry on a map in realtime. (Currently only RTTY)
+synopsis:            View coordinates received via telemetry on a map in realtime.
 homepage:            https://github.com/noexc/mapview
 license:             MIT
 license-file:        LICENSE
@@ -31,8 +31,8 @@ library
   default-language:    Haskell2010
   ghc-options:         -Wall -Werror -threaded
 
-executable mapview-rttyparser
-  main-is:             mapview-rttyparser.hs
+executable mapview-telemetryparser
+  main-is:             mapview-telemetryparser.hs
   build-depends:
       aeson >= 0.7
     , ansi-wl-pprint >= 0.6.7 && < 0.7

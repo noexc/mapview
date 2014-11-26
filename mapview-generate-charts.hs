@@ -41,8 +41,8 @@ runMain opts@(FullOptions cli chartOpts) = do
   where
     charts = [altitudeChart, magnetChart, temperatureChart]
 
--- | Reparse all data from the raw RTTY log, discarding any failed parses.
-readData :: TelemetryOptions -> IO [IO RTTYLine]
+-- | Reparse all data from the raw telemetry log, discarding any failed parses.
+readData :: TelemetryOptions -> IO [IO TelemetryLine]
 readData tel = do
   dataLines <- lines <$> readFile (rawLogPath tel)
   return $ unsafeSuccessExtract <$> filter isSuccess (parseString parseLine mempty <$> dataLines)
@@ -52,7 +52,7 @@ readData tel = do
     unsafeSuccessExtract (Success s) = s
     unsafeSuccessExtract _           = error "Attempted to extract Success from Failure"
 
-altitudeChart :: FullOptions -> IO [RTTYLine] -> IO ()
+altitudeChart :: FullOptions -> IO [TelemetryLine] -> IO ()
 altitudeChart (FullOptions _ _) parses = do
   p <- parses >>= plot'
   putStrLn "File:Altitude.svg|Altitude data"
@@ -60,12 +60,12 @@ altitudeChart (FullOptions _ _) parses = do
     layout_title .= "Altitude"
     p
   where
-    plot' :: [RTTYLine] -> IO (EC (Layout Int Double) ())
+    plot' :: [TelemetryLine] -> IO (EC (Layout Int Double) ())
     plot' parses' = do
       let datapoints = zip [1..] (map _altitude parses')
       return $ plot (line "meters" [datapoints])
 
-temperatureChart :: FullOptions -> IO [RTTYLine] -> IO ()
+temperatureChart :: FullOptions -> IO [TelemetryLine] -> IO ()
 temperatureChart (FullOptions _ _) parses = do
   p <- parses >>= plot'
   putStrLn "File:Temperature.svg|Temperature data (°C)"
@@ -74,12 +74,12 @@ temperatureChart (FullOptions _ _) parses = do
     p
   where
     cExtract (Celsius c) = c
-    plot' :: [RTTYLine] -> IO (EC (Layout Int Double) ())
+    plot' :: [TelemetryLine] -> IO (EC (Layout Int Double) ())
     plot' parses' = do
       let datapoints = zip [1..] (map (cExtract . _temperature) parses')
       return $ plot (line "°C" [datapoints])
 
-magnetChart :: FullOptions -> IO [RTTYLine] -> IO ()
+magnetChart :: FullOptions -> IO [TelemetryLine] -> IO ()
 magnetChart (FullOptions _ _) parses = do
   (x', y', z') <- parses >>= magXYZ
   putStrLn "File:Magnetometer.svg|Magnetometer data (°C)"
