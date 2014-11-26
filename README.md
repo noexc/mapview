@@ -11,8 +11,8 @@ We use the system in conjunction with RTTY telemetry, but it is easy to modify
 the system to work with other forms of telemetry - anything minimodem can
 support. In the case that minimodem won't do the mode that you need, just
 find a modem for your mode that can output received data as a stream to STDOUT,
-copy rttyparser.hs and make appropriate changes, and the system should continue
-to work.
+copy telemetryparser.hs and make appropriate changes, and the system should
+continue to work.
 
 # How it works
 
@@ -20,11 +20,11 @@ MapView is a set of Haskell programs that work together to get data to clients
 through the use of websockets, and client side code to view this data. The way
 it works is like this:
 
-[a receiver radio] -> [mapview-rttyparser] -> [mapview-send] -> [clients]
+[a receiver radio] -> [mapview-telemetryparser] -> [mapview-send] -> [clients]
 
 It depends on `minimodem` and calls out to it using the Shelly library for
-Haskell. On each successfully received line, `mapview-rttyparser` will output a
-JSON file.
+Haskell. On each successfully received line, `mapview-telemetryparser` will
+output a JSON file.
 
 In `mapview-send`, we use the fsnotify Haskell library to determine when the
 JSON file changes. When a change is detected, we push out new coordinates to
@@ -40,28 +40,28 @@ MapView is broken into three parts: the parser, the websocket broadcaster, and
 the client side code that listens for websocket broadcasts with new telemetry
 data.
 
-## `mapview-rttyparser`
+## `mapview-telemetryparser`
 
-`mapview-rttyparser` is the first step of the system. It shells out to
+`mapview-telemetryparser` is the first step of the system. It shells out to
 `minimodem` by using the awesome Shelly.hs library. Every time a newline is sent
 to it, it will attempt to parse the line. If it does so successfully, it will
 convert the data it receives to JSON and save it to a file.
 
-Future revisions of `mapview-rttyparser` could send it to some kind of public
-message bus instead, along with other telemetry data, so that clients could
-consume more data and work with it as they please.
+Future revisions of `mapview-telemetryparser` could send it to some kind of
+public message bus instead, along with other telemetry data, so that clients
+could consume more data and work with it as they please.
 
-This is all that `mapview-rttyparser` does: parse, convert to machine-readable,
-save.
+This is all that `mapview-telemetryparser` does: parse, convert to
+machine-readable, save.
 
 ## `mapview-send`
 
-`mapview-send` listens for changes to the file that `mapview-rttyparser` writes
-to. (Future revisions of it could consume a public message bus and pass data
-along from that source). It also allows clients to connect to it via websockets.
-When it detects a change to the file it monitors, it passes the new contents of
-the file to all clients who are connected (i.e., the clients receive a new block
-of JSON).
+`mapview-send` listens for changes to the file that `mapview-telemetryparser`
+writes to. (Future revisions of it could consume a public message bus and pass
+data along from that source). It also allows clients to connect to it via
+websockets. When it detects a change to the file it monitors, it passes the new
+contents of the file to all clients who are connected (i.e., the clients receive
+a new block of JSON).
 
 ## `mapview-generate-charts`
 
@@ -92,15 +92,19 @@ does what it should, since we can rely on a type system to keep us in check.
 * `cabal install`
 
 # Running it
-* `.cabal-sandbox/bin/rttyparser`
+* `.cabal-sandbox/bin/telemetryparser`
 * In another terminal, `.cabal-sandbox/bin/mapview-send`
 * Follow directions in the [mapview-psc repository](https://github.com/noexc/mapview-psc)
 * Then wait.
 
-# RTTY Messages
+# Telemetry Messages
 
-RTTY messages should be in the form of
-`:callsign:longitude:latitude:altitude:time`.
+The parser is currently hardcoded. Future work can and should go into making
+it be configurable (by having a Haskell file effectively act as a configuration
+file, similar to xmonad).
+
+Telemetry messages should currently be in the form of
+`:callsign:longitude:latitude:altitude:time:`.
 Other fields can be included, but they aren't currently used.
 
 Any line not in this format will be dropped, so e.g. training sequences are fine
