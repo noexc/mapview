@@ -2,7 +2,7 @@
 
 telemetry {
   # The coordinates log is a log of all data that we have previously dispatched to
-  # mapview-send. This path is written to by rttyparser and read from by
+  # mapview-send. This path is written to by telemetryparser and read from by
   # mapview-send.
   #
   # Each time a client connects to mapview-send, we'll send them the contents of
@@ -10,10 +10,10 @@ telemetry {
   # of mapview) know that it needs to display this path.
   coordinates-history = "/var/tmp/w8upd/coordinates-log.json"
 
-  # The rtty log is a record of the raw telemetry we've received from the modem
+  # The telemetry log is a record of the raw telemetry we've received from the modem
   # command. Every time we see a newline, we write the line it follows to this
   # file. This is useful for auditing and maybe debugging.
-  raw-log = "/var/tmp/w8upd/rttylog"
+  raw-log = "/var/tmp/w8upd/telemetrylog"
 
   # This path is where we write the "working coordinates" on each update. Every
   # time we successfully parse an update, we write a JSONified version of the
@@ -22,13 +22,13 @@ telemetry {
   # This file is what mapview-send reads to send out its location update
   # broadcasts. If this file changes, a JSON message will be sent out to all
   # connected clients, containing this file's contents.
-  working-coordinates = "/tmp/w8upd/rtty-coordinates.json"
+  working-coordinates = "/tmp/w8upd/telemetry-coordinates.json"
 
-  # mapview-rttyparser shells out to minimodem, an external dependency. These
-  # are the flags we pass to minimodem, when we shell to it. -r is mandatory
-  # and -q is strongly recommended to reduce noise in logs. The other options
-  # vary based on the mode and mode-specific settings being used.
-  minimodem-flags = ["-r", "-q", "rtty", "-S", "700", "-M", "870"]
+  # mapview-telemetryparser shells out to a (given) external modem. Here is
+  # where you can configure the modem to use. If you comment these out, we
+  # default to "minimodem -r -q rtty".
+  modem-command = "fldigi-shell"
+  modem-flags = ["-c", "poll"]
 }
 
 websockets {

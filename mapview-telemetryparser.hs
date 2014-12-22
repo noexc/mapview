@@ -25,14 +25,14 @@ main = execParser opts >>= runMain
   where
     opts = info (helper <*> parseOptions)
       ( fullDesc
-     <> progDesc "Read telemetry data from minimodem"
-     <> header "mapview-telemetryparser - Read telemetry data from minimodem" )
+     <> progDesc "Read telemetry data from a command-line modem"
+     <> header "mapview-telemetryparser - Read telemetry data from a modem" )
 
 runMain :: CLIOptions -> IO ()
 runMain c = snd <$> runConfig c >>= readTelemetry
 
 readTelemetry :: TelemetryOptions -> IO ()
-readTelemetry p = shelly $ runHandle "minimodem" (map T.pack $ minimodemFlags p) (writeJson p)
+readTelemetry p = shelly $ runHandle (fromText . T.pack $ modem p) (map T.pack $ modemFlags p) (writeJson p)
 
 recordCoordinates :: TelemetryOptions -> Coordinates -> IO ()
 recordCoordinates p latest = do

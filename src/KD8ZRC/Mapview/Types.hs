@@ -79,9 +79,10 @@ instance A.ToJSON TelemetryLine where
 
 data TelemetryOptions =
   TelemetryOptions { historyPath :: String
-                   , rawLogPath :: String
+                   , rawLogPath  :: String
                    , workingPath :: String
-                   , minimodemFlags :: [String]
+                   , modem       :: String
+                   , modemFlags  :: [String]
                    }
 
 makeLenses ''TelemetryOptions
@@ -112,12 +113,18 @@ runConfig (CLIOptions configFile') = do
   workingPath' <- Cfg.require config "telemetry.working-coordinates"
   createDirectoryIfMissing True (baseDir workingPath')
 
-  flags <- Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.minimodem-flags"
-  let opts = TelemetryOptions historyPath' rawLogPath' workingPath' flags
+  modemCommand <- Cfg.lookupDefault "minimodem" config "telemetry.modem-command"
+  flags <- Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.modem-flags"
+  let opts = TelemetryOptions
+             historyPath'
+             rawLogPath'
+             workingPath'
+             modemCommand
+             flags
   return (config, opts)
 
 createMissingDirectories :: TelemetryOptions -> IO ()
-createMissingDirectories (TelemetryOptions h r w _) =
+createMissingDirectories (TelemetryOptions h r w _ _) =
   mapM_ createFileIfMissing [h, r, w]
   where
     createFileIfMissing p = do
