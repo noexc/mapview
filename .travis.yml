@@ -39,6 +39,8 @@ before_install:
     fi
 
 install:
+  - git clone git://github.com/relrod/gpsd-haskell
+  - $CABAL install ./gpsd-haskell
   - $CABAL install --dependencies-only --enable-tests
   - $CABAL configure -flib-Werror --enable-tests $MODE
 
