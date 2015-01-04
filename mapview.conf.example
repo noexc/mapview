@@ -1,5 +1,18 @@
 # This is the configuration we use for the server-side part of mapview.
 
+gpsd {
+  # mapview can interface with gpsd to track where the chase vehicle is
+  # relative to the balloon. This functionality is enabled by having gpsd
+  # running (and configured correctly, working with a valid GPS device), and
+  # running the included `mapview-gpsd` program.
+  #
+  # gpsd.coordinates-history determines where `mapview-gpsd` stores the data it
+  # collects, and what `mapview-send` reads in order to allow clients to
+  # visualize the location. In order for this data to be sent, `mapview-send`
+  # must be started with the `--gpsd` flag.
+  coordinates-history = "/var/tmp/w8upd/gpsd-coordinates-log.json"
+}
+
 telemetry {
   # The coordinates log is a log of all data that we have previously dispatched to
   # mapview-send. This path is written to by telemetryparser and read from by

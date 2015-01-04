@@ -79,11 +79,12 @@ instance A.ToJSON TelemetryLine where
 
 data ConfigFileOptions =
   ConfigFileOptions { historyPath :: String
-                   , rawLogPath  :: String
-                   , workingPath :: String
-                   , modem       :: String
-                   , modemFlags  :: [String]
-                   }
+                    , rawLogPath  :: String
+                    , workingPath :: String
+                    , modem       :: String
+                    , modemFlags  :: [String]
+                    , gpsdHistory :: String
+                    }
 
 data CLIOptions =
   CLIOptions String deriving (Show)
@@ -111,17 +112,23 @@ runConfig (CLIOptions configFile') = do
 
   modemCommand <- Cfg.lookupDefault "minimodem" config "telemetry.modem-command"
   flags <- Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.modem-flags"
+
+  gpsdPath' <- Cfg.require config "gpsd.coordinates-history"
+  createDirectoryIfMissing True (baseDir gpsdPath')
+
   let opts = ConfigFileOptions
              historyPath'
              rawLogPath'
              workingPath'
              modemCommand
              flags
+             gpsdPath'
+
   return (config, opts)
 
 createMissingDirectories :: ConfigFileOptions -> IO ()
-createMissingDirectories (ConfigFileOptions h r w _ _) =
-  mapM_ createFileIfMissing [h, r, w]
+createMissingDirectories (ConfigFileOptions h r w _ _ g) =
+  mapM_ createFileIfMissing [h, r, w, g]
   where
     createFileIfMissing p = do
       doesExist <- doesFileExist p
