@@ -85,12 +85,8 @@ data ConfigFileOptions =
                    , modemFlags  :: [String]
                    }
 
-makeLenses ''ConfigFileOptions
-
 data CLIOptions =
   CLIOptions String deriving (Show)
-
-makeLenses ''CLIOptions
 
 parseOptions :: Parser CLIOptions
 parseOptions =
