@@ -42,7 +42,7 @@ runMain opts@(FullOptions cli chartOpts) = do
     charts = [altitudeChart, magnetChart, temperatureChart]
 
 -- | Reparse all data from the raw telemetry log, discarding any failed parses.
-readData :: TelemetryOptions -> IO [IO TelemetryLine]
+readData :: ConfigFileOptions -> IO [IO TelemetryLine]
 readData tel = do
   dataLines <- lines <$> readFile (rawLogPath tel)
   return $ unsafeSuccessExtract <$> filter isSuccess (parseString parseLine mempty <$> dataLines)

@@ -31,16 +31,16 @@ main = execParser opts >>= runMain
 runMain :: CLIOptions -> IO ()
 runMain c = snd <$> runConfig c >>= readTelemetry
 
-readTelemetry :: TelemetryOptions -> IO ()
+readTelemetry :: ConfigFileOptions -> IO ()
 readTelemetry p = shelly $ runHandle (fromText . T.pack $ modem p) (map T.pack $ modemFlags p) (writeJson p)
 
-recordCoordinates :: TelemetryOptions -> Coordinates -> IO ()
+recordCoordinates :: ConfigFileOptions -> Coordinates -> IO ()
 recordCoordinates p latest = do
   old <- S.readFile (historyPath p)
   let cList = A.decode (C8L.pack old) :: Maybe [Coordinates]
   writeFile (historyPath p) (C8L.unpack $ A.encode (latest : fromMaybe [] cList))
 
-writeJson :: TelemetryOptions -> Handle -> Sh ()
+writeJson :: ConfigFileOptions -> Handle -> Sh ()
 writeJson p h = do
   liftIO $ hSetBuffering h NoBuffering
   line' <- liftIO $ hGetLine h

@@ -77,15 +77,15 @@ instance A.ToJSON TelemetryLine where
     , "temperature"    A..= c
     ]
 
-data TelemetryOptions =
-  TelemetryOptions { historyPath :: String
+data ConfigFileOptions =
+  ConfigFileOptions { historyPath :: String
                    , rawLogPath  :: String
                    , workingPath :: String
                    , modem       :: String
                    , modemFlags  :: [String]
                    }
 
-makeLenses ''TelemetryOptions
+makeLenses ''ConfigFileOptions
 
 data CLIOptions =
   CLIOptions String deriving (Show)
@@ -99,9 +99,9 @@ parseOptions =
                             <> metavar "CONFIG_FILE"
                             <> value "mapview.conf")
 
--- | Parse config values into a common structure ('TelemetryOptions') and
+-- | Parse config values into a common structure ('ConfigFileOptions') and
 -- return it after creating any necessary directories.
-runConfig :: CLIOptions -> IO (Cfg.Config, TelemetryOptions)
+runConfig :: CLIOptions -> IO (Cfg.Config, ConfigFileOptions)
 runConfig (CLIOptions configFile') = do
   config <- Cfg.load [Cfg.Required configFile']
   historyPath' <- Cfg.require config "telemetry.coordinates-history"
@@ -115,7 +115,7 @@ runConfig (CLIOptions configFile') = do
 
   modemCommand <- Cfg.lookupDefault "minimodem" config "telemetry.modem-command"
   flags <- Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.modem-flags"
-  let opts = TelemetryOptions
+  let opts = ConfigFileOptions
              historyPath'
              rawLogPath'
              workingPath'
@@ -123,8 +123,8 @@ runConfig (CLIOptions configFile') = do
              flags
   return (config, opts)
 
-createMissingDirectories :: TelemetryOptions -> IO ()
-createMissingDirectories (TelemetryOptions h r w _ _) =
+createMissingDirectories :: ConfigFileOptions -> IO ()
+createMissingDirectories (ConfigFileOptions h r w _ _) =
   mapM_ createFileIfMissing [h, r, w]
   where
     createFileIfMissing p = do

@@ -53,7 +53,7 @@ runMain c = do
   port <- Cfg.require config "websockets.port"
   WS.runServer host port $ application opts state
 
-application :: TelemetryOptions -> MVar ServerState -> WS.ServerApp
+application :: ConfigFileOptions -> MVar ServerState -> WS.ServerApp
 application opts state pending = do
   conn <- WS.acceptRequest pending
   uuid <- UUIDv4.nextRandom
@@ -84,7 +84,7 @@ application opts state pending = do
         let s' = removeClient client s in return (s', s')
       broadcast "someone disconnected" s
 
-talk :: TelemetryOptions -> WS.Connection -> MVar ServerState -> IO ()
+talk :: ConfigFileOptions -> WS.Connection -> MVar ServerState -> IO ()
 talk opts conn state = forever $
   withManager $ \man -> do
     _ <- watchTree man (COS.fromText $ T.pack (baseDir (workingPath opts))) (const True) handle
