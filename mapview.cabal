@@ -107,6 +107,7 @@ executable mapview-gpsd
     , configurator >= 0.3
     , gpsd >= 1 && < 2
     , lens >= 4.4 && < 5
+    , optparse-applicative >= 0.9
     , pipes >= 4 && < 5
     , mapview
 
