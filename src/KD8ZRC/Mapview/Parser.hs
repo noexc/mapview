@@ -18,7 +18,7 @@ number base baseDigit =
 -- | Input is in the following format:
 --
 -- >>> :W8UPD:41.09347:-80.74683:237.0:032553:656:-40:83:
-parseLine :: Parser (IO TelemetryLine)
+parseLine :: (Monad m, TokenParsing m) => m (IO TelemetryLine)
 parseLine = do
   _ <- colon
   callsign' <- manyTill anyChar (try colon)
