@@ -35,13 +35,16 @@ makeLenses ''MagField
 newtype Celsius = Celsius { _degrees :: Double } deriving (Show)
 makeLenses ''Celsius
 
+newtype CRC = CRC { _crcString :: Integer } deriving (Eq, Show)
+
 data TelemetryLine = TelemetryLine {
-    _callsign   :: T.Text
+    _callsign    :: T.Text
   , _coordinates :: Coordinates
-  , _altitude   :: Meters
-  , _time       :: UTCTime
-  , _magnetic   :: MagField
+  , _altitude    :: Meters
+  , _time        :: UTCTime
+  , _magnetic    :: MagField
   , _temperature :: Celsius
+  , _crc         :: CRC
   } deriving Show
 makeLenses ''TelemetryLine
 
@@ -68,7 +71,7 @@ instance A.FromJSON Coordinates where
   parseJSON _            = mzero
 
 instance A.ToJSON TelemetryLine where
-  toJSON (TelemetryLine _ coord alt t mag (Celsius c)) =
+  toJSON (TelemetryLine _ coord alt t mag (Celsius c) _) =
     A.object
     [ "coordinates"    A..= coord
     , "altitude"       A..= alt

@@ -1,6 +1,8 @@
 module KD8ZRC.Mapview.Parser where
 
 import Control.Applicative
+import Data.Char (digitToInt)
+import Data.List (foldl')
 import qualified Data.Text as T
 import Data.Thyme.Format
 import Linear.V3
@@ -8,6 +10,10 @@ import System.Locale
 import Text.Trifecta
 
 import KD8ZRC.Mapview.Types
+
+number :: TokenParsing m => Integer -> m Char -> m Integer
+number base baseDigit =
+  foldl' (\x d -> base*x + toInteger (digitToInt d)) 0 <$> some baseDigit
 
 -- | Input is in the following format:
 --
@@ -41,6 +47,8 @@ parseLine = do
   celsius <- eitherToNum <$> integerOrDouble
   _ <- colon
 
+  crc16 <- char '0' *> oneOf "xX" *> number 16 hexDigit
+
   return $ return $ TelemetryLine
     (T.pack callsign')
     (Coordinates lat' lon')
@@ -48,6 +56,7 @@ parseLine = do
     (readTime defaultTimeLocale "%H%M%S" time')
     (MagField (V3 magX magY magZ))
     (Celsius celsius)
+    (CRC crc16)
 
 eitherToNum :: (Num b, Integral a) => Either a b -> b
 eitherToNum = either fromIntegral id
