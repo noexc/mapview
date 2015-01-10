@@ -41,6 +41,7 @@ before_install:
 install:
   - git clone git://github.com/relrod/gpsd-haskell
   - $CABAL install lens-4.6 ./gpsd-haskell
+  - $CABAL install HUnit # crc16 lib package is broken.
   - $CABAL install --dependencies-only --enable-tests
   - $CABAL configure -flib-Werror --enable-tests $MODE
 
