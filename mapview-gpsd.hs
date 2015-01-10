@@ -1,5 +1,6 @@
 module Main where
 
+import Data.Foldable (forM_)
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as LB
 import KD8ZRC.Mapview.Types
@@ -16,9 +17,7 @@ tpvToCoordinates tpv = do
 
 writeCoordinates :: ConfigFileOptions -> Maybe Coordinates -> IO ()
 writeCoordinates cfg c =
-  case c of
-   Nothing -> return ()
-   Just c' -> LB.writeFile (gpsdHistory cfg) . encode $ c'
+  forM_ c (LB.writeFile (gpsdHistory cfg) . encode)
 
 main :: IO ()
 main = execParser opts >>= runMain
@@ -37,4 +36,3 @@ loopGpsd c = do
   runEffect $
     for (skipErrors (socketToPipe s) :: Producer Tpv IO ())
     (\x -> lift . writeCoordinates c . tpvToCoordinates $ x)
-
