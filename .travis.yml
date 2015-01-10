@@ -46,4 +46,5 @@ install:
 
 script:
   - $CABAL build
-# - $CABAL test --show-details=always
+  - $CABAL test --show-details=always --test-option="--color=always" hlint
+  - $CABAL test --show-details=always --test-option="--color=always" --test-option="--quickcheck-tests=1000000" tasty
