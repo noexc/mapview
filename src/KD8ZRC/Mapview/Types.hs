@@ -35,7 +35,8 @@ makeLenses ''MagField
 newtype Celsius = Celsius { _degrees :: Double } deriving (Show)
 makeLenses ''Celsius
 
-newtype CRC = CRC { _crcString :: Integer } deriving (Eq, Show)
+newtype TelemetryCRC = TelemetryCRC Integer deriving (Eq, Show)
+newtype CalculatedCRC = CalculatedCRC Integer deriving (Eq, Show)
 
 data TelemetryLine = TelemetryLine {
     _callsign    :: T.Text
@@ -44,7 +45,7 @@ data TelemetryLine = TelemetryLine {
   , _time        :: UTCTime
   , _magnetic    :: MagField
   , _temperature :: Celsius
-  , _crc         :: CRC
+  , _crc         :: (TelemetryCRC, CalculatedCRC)
   } deriving Show
 makeLenses ''TelemetryLine
 
