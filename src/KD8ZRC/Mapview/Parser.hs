@@ -5,7 +5,7 @@ import qualified Data.ByteString as BR
 import qualified Data.ByteString.Char8 as BRC
 import Data.Char (digitToInt)
 import Data.Digest.CRC16
-import Data.List (foldl')
+import Data.List (dropWhileEnd, foldl')
 import qualified Data.Text as T
 import Data.Thyme.Format
 import Data.Word
@@ -23,13 +23,13 @@ crcHaskellF :: Word16 -> Bool -> Word16 -> [Word8] -> Word16
 crcHaskellF poly inverse initial = BR.foldl (crc16Update poly inverse) initial . BR.pack
 
 -- TODO: Config-file polynomial and initial.
-crcHaskell :: String -> Integer
+crcHaskell :: String -> CalculatedCRC
 crcHaskell s =
-  fromIntegral $ crcHaskellF
-                 0x1021
-                 False
-                 0xffff
-                 [fromIntegral (fromEnum x) :: Word8 | x <- s]
+  CalculatedCRC . fromIntegral $ crcHaskellF
+    0x1021
+    False
+    0xffff
+    [fromIntegral (fromEnum x) :: Word8 | x <- s]
 
 -- | Input is in the following format:
 --
@@ -66,7 +66,7 @@ parseLine = do
   crc16T <- char '0' *> oneOf "xX" *> number 16 hexDigit
   _ <- colon
 
-  crc16C <- crcHaskell . BRC.unpack <$> line
+  crc16C <- crcHaskell . dropWhileEnd (/= ':') . init . BRC.unpack <$> line
 
   return $ return $ TelemetryLine
     (T.pack callsign')
@@ -75,7 +75,7 @@ parseLine = do
     (readTime defaultTimeLocale "%H%M%S" time')
     (MagField (V3 magX magY magZ))
     (Celsius celsius)
-    (TelemetryCRC crc16T, CalculatedCRC crc16C)
+    (mkCRCConfirmation (TelemetryCRC crc16T) crc16C)
 
 eitherToNum :: (Num b, Integral a) => Either a b -> b
 eitherToNum = either fromIntegral id

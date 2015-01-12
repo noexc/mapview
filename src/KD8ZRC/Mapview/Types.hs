@@ -37,6 +37,13 @@ makeLenses ''Celsius
 
 newtype TelemetryCRC = TelemetryCRC Integer deriving (Eq, Show)
 newtype CalculatedCRC = CalculatedCRC Integer deriving (Eq, Show)
+data CRCConfirmation = CRCMatch Integer | CRCMismatch TelemetryCRC CalculatedCRC deriving (Eq, Show)
+
+mkCRCConfirmation :: TelemetryCRC -> CalculatedCRC -> CRCConfirmation
+mkCRCConfirmation t@(TelemetryCRC t') c@(CalculatedCRC c') =
+  if t' == c'
+  then CRCMatch t'
+  else CRCMismatch t c
 
 data TelemetryLine = TelemetryLine {
     _callsign    :: T.Text
@@ -45,7 +52,7 @@ data TelemetryLine = TelemetryLine {
   , _time        :: UTCTime
   , _magnetic    :: MagField
   , _temperature :: Celsius
-  , _crc         :: (TelemetryCRC, CalculatedCRC)
+  , _crc         :: CRCConfirmation
   } deriving Show
 makeLenses ''TelemetryLine
 
