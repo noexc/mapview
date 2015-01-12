@@ -64,6 +64,8 @@ parseLine = do
   _ <- colon
 
   crc16T <- char '0' *> oneOf "xX" *> number 16 hexDigit
+  _ <- colon
+
   crc16C <- crcHaskell . BRC.unpack <$> line
 
   return $ return $ TelemetryLine
