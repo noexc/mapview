@@ -11,7 +11,6 @@ import Data.List (dropWhileEnd)
 import qualified Data.Text as T
 import Data.Thyme.Clock
 import Data.Thyme.Format.Aeson ()
-import Linear.V3
 import Options.Applicative
 import System.Directory (createDirectoryIfMissing, doesFileExist)
 
@@ -28,9 +27,6 @@ makeLenses ''Coordinates
 data CoordinatesList = CoordinatesList {
     coordinatesList :: [Coordinates]
     } deriving Show
-
-newtype MagField = MagField { _values :: V3 Integer } deriving (Show)
-makeLenses ''MagField
 
 newtype Celsius = Celsius { _degrees :: Double } deriving (Show)
 makeLenses ''Celsius
@@ -50,7 +46,6 @@ data TelemetryLine = TelemetryLine {
   , _coordinates :: Coordinates
   , _altitude    :: Meters
   , _time        :: UTCTime
-  , _magnetic    :: MagField
   , _temperature :: Celsius
   , _crc         :: CRCConfirmation
   } deriving Show
@@ -64,14 +59,6 @@ instance A.ToJSON Coordinates where
     , "lon" A..= lon
     ]
 
-instance A.ToJSON MagField where
-  toJSON (MagField (V3 x y z)) =
-    A.object
-    [ "x" A..= x
-    , "y" A..= y
-    , "z" A..= z
-    ]
-
 instance A.FromJSON Coordinates where
   parseJSON (A.Object v) = Coordinates <$>
                              v A..: "lat"
@@ -79,12 +66,11 @@ instance A.FromJSON Coordinates where
   parseJSON _            = mzero
 
 instance A.ToJSON TelemetryLine where
-  toJSON (TelemetryLine _ coord alt t mag (Celsius c) _) =
+  toJSON (TelemetryLine _ coord alt t (Celsius c) _) =
     A.object
     [ "coordinates"    A..= coord
     , "altitude"       A..= alt
     , "time"           A..= t
-    , "magnetic_field" A..= mag
     , "temperature"    A..= c
     ]
 

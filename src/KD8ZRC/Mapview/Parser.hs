@@ -9,7 +9,6 @@ import Data.List (dropWhileEnd, foldl')
 import qualified Data.Text as T
 import Data.Thyme.Format
 import Data.Word
-import Linear.V3
 import System.Locale
 import Text.Trifecta
 
@@ -51,15 +50,6 @@ parseLine = do
   time' <- many (token digit)
   _ <- colon
 
-  magX <- integer
-  _ <- colon
-
-  magY <- integer
-  _ <- colon
-
-  magZ <- integer
-  _ <- colon
-
   celsius <- eitherToNum <$> integerOrDouble
   _ <- colon
 
@@ -73,7 +63,6 @@ parseLine = do
     (Coordinates lat' lon')
     altitude'
     (readTime defaultTimeLocale "%H%M%S" time')
-    (MagField (V3 magX magY magZ))
     (Celsius celsius)
     (mkCRCConfirmation (TelemetryCRC crc16T) crc16C)
 

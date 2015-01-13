@@ -6,7 +6,6 @@ import Control.Monad
 import Data.Monoid (mempty)
 import Graphics.Rendering.Chart.Easy
 import Graphics.Rendering.Chart.Backend.Diagrams
-import Linear.V3
 import Options.Applicative hiding (Failure, Parser, Success)
 import qualified Options.Applicative (Parser)
 import Text.Trifecta hiding (line)
@@ -39,7 +38,7 @@ runMain opts@(FullOptions cli chartOpts) = do
   mapM_ (\x -> x opts telemetry) charts
   when (wiki chartOpts) $ putStrLn "</gallery>"
   where
-    charts = [altitudeChart, magnetChart, temperatureChart]
+    charts = [altitudeChart, temperatureChart]
 
 -- | Reparse all data from the raw telemetry log, discarding any failed parses.
 readData :: ConfigFileOptions -> IO [IO TelemetryLine]
@@ -78,23 +77,3 @@ temperatureChart (FullOptions _ _) parses = do
     plot' parses' = do
       let datapoints = zip [1..] (map (cExtract . _temperature) parses')
       return $ plot (line "°C" [datapoints])
-
-magnetChart :: FullOptions -> IO [TelemetryLine] -> IO ()
-magnetChart (FullOptions _ _) parses = do
-  (x', y', z') <- parses >>= magXYZ
-  putStrLn "File:Magnetometer.svg|Magnetometer data (°C)"
-  toFile def "charts/magnetometer.svg" $ do
-    layout_title .= "Magnetometer"
-    x' >> y' >> z'
-  where
-    f ms = (xs, ys, zs)
-      where
-        xs = ms & mapped._2 %~ (^. _x)
-        ys = ms & mapped._2 %~ (^. _y)
-        zs = ms & mapped._2 %~ (^. _z)
-    magXYZ parses' =
-      let (mX, mY, mZ) = f (parses' ^@.. reindexed (+1) (traversed <. magnetic . values))
-      in return ( plot (line "x" [mX])
-                , plot (line "y" [mY])
-                , plot (line "z" [mZ])
-                )
