@@ -1,0 +1,118 @@
+:toc: right
+:icons: font
+
+= Introduction to MapView
+
+link:https://github.com/noexc/mapview[MapView] is an on-the-ground telemetry
+reception system for
+link:https://en.wikipedia.org/wiki/High-altitude_balloon[high-altitude balloon projects].
+It is meant to be used by those with an interest in HAB chases, as a means of
+tracking and following the balloon during a flight.
+
+It consists of several individual components, some of which interoperate with
+each other, and some of which can be run independently during and after a
+balloon chase.
+
+MapView is written from a standpoint that prefers stability (and correctness)
+and modularity over speed and ease of installation. Because of this, setting it
+up for the first time can be daunting, particularly if you are not familiar with
+building and installing Haskell packages.
+
+It is our hope that this documentation makes the process as pain-free as
+possible, but we invite and encourage questions about the process in the
+link:irc://irc.freenode.net/noexc[#noexc channel on freenode].
+
+== Components
+
+MapView is built in a particularly modular way as
+link:http://noexc.org/[our own] requirements change fairly often. Typically, we
+experiment with new technologies and telemetry systems on each flight we
+perform, and it is important that we are able to compensate for these changes
+quickly, and reflect them in the MapView codebase with relative ease.
+
+Here we give a brief overview of each component. Each component has its own
+documentation file with more information about the role it plays.
+
+Programs (each of which is considered an individual component) which ship with
+MapView, as a rule, are all prefixed with `mapview-`. For example,
+`mapview-telemetryparser` is the program (component) which parses raw telemetry
+in realtime during a flight.
+
+We don't currently make use of any kind of real "IPC" framework. Instead, we
+write out state to files (usually in JSON) and listen for changes to these files
+in various components. In the future, we could optionally make use of something
+along the lines of `dbus` for dealing with IPC, if there is a need/want.
+
+=== mapview: The Library
+
+There is a common library used by all components. This includes, for example,
+pieces of code for handling
+link:https://en.wikipedia.org/wiki/Cyclic_redundancy_check[CRC] validation,
+parsing of raw telemetry data, configuration file parsing, and datatypes and
+typeclasses which are reused throughout the various components.
+
+=== mapview-telemetryparser
+
+`mapview-telemetryparser` is the program which parses raw telemetry data during
+a flight. In short, it shells out to some modem (`minimodem` by default. See the
+documentation for Configuration for details) and parses anything that the modem
+sends to `STDOUT`. If the parse is successful -- that is, if we receive a valid
+packet from the HAB telemetry which passes the CRC check -- it writes out a JSON
+representation of this packet to the file specified in `mapview.conf`. If the
+parse fails, it writes the error to the terminal, with a short description of
+why (provided by the link:https://hackage.haskell.org/package/trifecta[Trifecta]
+library).
+
+`mapview-telemetryparser` also saves a raw log of the modem output, for later
+processing. We use this, for example, in `mapview-generate-charts` for making
+graphs of flight data post-factum.
+
+Lastly, `mapview-telemetryparser` writes a third file which is a list of all
+coordinates obtained from the balloon thus far. It does this by reading the file
+and prepending the latest successfully parsed set of coordinates to it, then
+writing the result. We do this so that when one refreshes any of the map viewing
+interfaces (such as `mapview-psc`), they are able to see a trail of where the
+balloon has been.
+
+=== mapview-send
+
+`mapview-send` listens for changes to the files updated by
+`mapview-telemetryparser` and sends appropriate updates to all clients who are
+viewing a frontend. That is, a frontend implementation must connect (via
+websockets) to a server that `mapview-send` starts. When `mapview-send` detects
+changes to relevant files, it puts them into a format that frontend clients can
+understand. The frontend can then update its view based on this information.
+
+=== mapview-generate-charts
+
+`mapview-generate-charts` is usually used post-factum. When a flight completes,
+`mapview-generate-charts` will re-run the raw telemetry log and parse it again,
+graphing certain things such as altitude and temperature.
+
+=== mapview-psc
+
+Our official frontend is maintained in a
+link:https://github.com/noexc/mapview-psc[separate repository] from MapView
+itself, though changes in one repository and sometimes require changes in the
+other.
+
+It is written in link:http://purescript.org[PureScript], a strongly typed
+programming language which compiles down to JavaScript.
+
+mapview-psc can be considered a "reference frontend," if you will. The frontend
+is one of the simplest parts of MapView, and those with specific needs could
+easily write their own, so long as it can connect to the `mapview-send`
+websockets server.
+
+== Bugs, Comments, Issues
+
+Please, please, **please** report any bugs or issues our GitHub repositories
+(mapview for the backend, mapview-psc for the frontend). We cannot fix or
+discuss issues unless we know that you are having them!
+
+General comments and questions can (and should! We don't bite!) be asked on our
+link://irc.freenode.net/noexc[IRC channel], #noexc on freenode.
+
+== Licensing
+
+MapView and mapview-psc are both made available under the MIT license.
