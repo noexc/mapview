@@ -109,7 +109,7 @@ websockets server.
 
 == Bugs, Comments, Issues
 
-Please, please, **please** report any bugs or issues our GitHub repositories
+Please, please, **please** report any bugs or issues to our GitHub repositories
 (mapview for the backend, mapview-psc for the frontend). We cannot fix or
 discuss issues unless we know that you are having them!
 
