@@ -27,7 +27,8 @@ popd
 rm -rf "$f"
 
 if [ $? == 0 ]; then
-  echo "*** Done: http://noexc.github.io/mapview/"
+  ssh origin.noexc.org 'cd /srv/www/mapview.noexc.org && git pull origin gh-pages'
+  echo "*** Done: https://mapview.noexc.org/"
   exit 0
 else
   echo "*** ERROR!!! Fix the above and try again."
