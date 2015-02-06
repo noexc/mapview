@@ -19,6 +19,7 @@ pushd "$f/mapview.git"
   popd
   mv doc/*.html .
   rmdir doc
+  echo 'mapview.noexc.org' > CNAME
   git add -A
   git commit -m "Manual docs deploy."
   git push origin gh-pages
