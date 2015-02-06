@@ -11,12 +11,14 @@ pushd "$f/mapview.git"
 popd
 mv dist/doc/html/mapview/* "$f/mapview.git/haddock"
 pushd "$f/mapview.git"
-  git checkout master -- docs
-  pushd docs
+  git checkout master -- doc
+  pushd doc
     asciidoctor *.adoc
-    ln -s Introduction.html index.html
+    cp Introduction.html index.html
     rm *.adoc
   popd
+  mv doc/*.html .
+  rmdir doc
   git add -A
   git commit -m "Manual docs deploy."
   git push origin gh-pages
