@@ -45,7 +45,7 @@ along the lines of `dbus` for dealing with IPC, if there is a need/want.
 
 === mapview: The Library
 
-TIP: We also publish link:/mapview/haddock[haddock] documentation for this
+TIP: We also publish link:/haddock[haddock] documentation for this
 library.
 
 There is a common library used by all components. This includes, for example,
