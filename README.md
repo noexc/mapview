@@ -11,7 +11,7 @@ We use the system in conjunction with RTTY telemetry, but it is easy to modify
 the system to work with other forms of telemetry - anything minimodem can
 support. In the case that minimodem won't do the mode that you need, just
 find a modem for your mode that can output received data as a stream to STDOUT,
-copy telemetryparser.hs and make appropriate changes, and the system should
+edit the configuration file and make appropriate changes, and the system should
 continue to work.
 
 # How it works
@@ -22,9 +22,9 @@ it works is like this:
 
 [a receiver radio] -> [mapview-telemetryparser] -> [mapview-send] -> [clients]
 
-It depends on `minimodem` and calls out to it using the Shelly library for
-Haskell. On each successfully received line, `mapview-telemetryparser` will
-output a JSON file.
+It depends on `minimodem` (by default) and calls out to it using the Shelly
+library for Haskell. On each successfully received line,
+`mapview-telemetryparser` will output a JSON file.
 
 In `mapview-send`, we use the fsnotify Haskell library to determine when the
 JSON file changes. When a change is detected, we push out new coordinates to
@@ -43,9 +43,10 @@ data.
 ## `mapview-telemetryparser`
 
 `mapview-telemetryparser` is the first step of the system. It shells out to
-`minimodem` by using the awesome Shelly.hs library. Every time a newline is sent
-to it, it will attempt to parse the line. If it does so successfully, it will
-convert the data it receives to JSON and save it to a file.
+`minimodem` (by default) by using the awesome Shelly.hs library. Every time a
+newline is sent to it, it will attempt to parse the line. If it does so
+successfully, it will convert the data it receives to JSON and save it to a
+file.
 
 Future revisions of `mapview-telemetryparser` could send it to some kind of
 public message bus instead, along with other telemetry data, so that clients
