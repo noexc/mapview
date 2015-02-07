@@ -22,6 +22,26 @@ It is our hope that this documentation makes the process as pain-free as
 possible, but we invite and encourage questions about the process in the
 link:irc://irc.freenode.net/noexc[#noexc channel on freenode].
 
+== History
+
+MapView began its life as a project for the University of Akron Amateur Radio
+club's "HABP-*n*" series of balloon flights. These flights were conducted yearly
+and there was a need for an effective and easy way to track the balloon.
+
+Ricky Elrod, N8SQL, wrote a prototype of the project in NodeJS as an experiment,
+having never coded in NodeJS. The prototype got positive feedback, but Ricky
+ended up realizing that NodeJS would not be a viable platform to meet the goals
+of the project. A rewrite in Haskell was started on
+link:https://github.com/noexc/mapview/commit/3df37823aa9bf596406cc5dbdeed004d5a167517[January 20, 2014]
+and has been in active development ever since.
+
+Alumni and former students of the University of Akron formed a new club, the
+link:https://noexc.org/[Northeast Ohio Experimenters Club], and maintenance
+of MapView and related projects has continued under that name. The project
+continues to be led by Ricky Elrod as new NOEXC flights incorporate new and
+interesting requirements. MapView is and always will be free and open source
+software and we welcome and encourage questions, contributions, and comments.
+
 == Components
 
 MapView is built in a particularly modular way as
