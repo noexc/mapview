@@ -74,7 +74,7 @@ link:https://en.wikipedia.org/wiki/Cyclic_redundancy_check[CRC] validation,
 parsing of raw telemetry data, configuration file parsing, and datatypes and
 typeclasses which are reused throughout the various components.
 
-=== link:mapview-telemetryparser{ext-relative}[mapview-telemetryparser]
+=== `mapview-telemetryparser` [link:mapview-telemetryparser{ext-relative}[main]]
 
 `mapview-telemetryparser` is the program which parses raw telemetry data during
 a flight. In short, it shells out to some modem (`minimodem` by default. See the
