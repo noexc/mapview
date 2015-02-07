@@ -462,7 +462,7 @@ below.</p>
 <div class="paragraph">
 <p>The <code>gpsd</code> section of the configuration file sets up MapView&#8217;s (optional)
 interaction with the <a href="http://www.catb.org/gpsd/"><code>gpsd</code></a> daemon. For more
-information about our usage of <code>gpsd</code>, see <a href="GPSD{ext-relative}">GPSD</a>.</p>
+information about our usage of <code>gpsd</code>, see <a href="GPSD.html">GPSD</a>.</p>
 </div>
 <div class="sect2">
 <h3 id="__code_coordinates_history_code"><code>coordinates-history</code></h3>
@@ -490,7 +490,7 @@ issue.</p>
 <div class="paragraph">
 <p><code>telemetry.coordinates-history</code> is the location of a file which tracks pairs of
 coordinates we have received from the balloon. The file (discussed more in
-<a href="mapview-telemetryparser{ext-relative}">mapview-telemetryparser</a>) is a JSON
+<a href="mapview-telemetryparser.html">mapview-telemetryparser</a>) is a JSON
 file to which <code>mapview-telemetryparser</code> prepends a pair of GPS coordinates each
 time it receives a successful packet from the telemetry downlink. It is used
 for sending the path history of the balloon to frontends.</p>
@@ -508,21 +508,21 @@ been previously thought of. <code>telemetry.raw-log</code> is the path of this r
 <div class="sect2">
 <h3 id="__code_working_coordinates_code"><code>working-coordinates</code></h3>
 <div class="paragraph">
-<p>We <a href="Definitions{ext-relative}">define</a> the "working coordinates" of the
+<p>We <a href="Definitions.html">define</a> the "working coordinates" of the
 balloon to be the coordinates received in the last <strong>successful</strong> parse.
 <code>telemetry.working-coordinates</code>, then, is the path of the file which contains
 the latest pair of working coordinates (and other information from the last
 packet). It is updated by
-<a href="mapview-telemetryparser{ext-relative}">mapview-telemetryparser</a> on each
+<a href="mapview-telemetryparser.html">mapview-telemetryparser</a> on each
 successful parse and changes to it are listened for by
-<a href="mapview-send{ext-relative}">mapview-send</a> and sent out to connected
+<a href="mapview-send.html">mapview-send</a> and sent out to connected
 frontends.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="__code_modem_command_code_and_code_modem_flags_code"><code>modem-command</code> and <code>modem-flags</code></h3>
 <div class="paragraph">
-<p><a href="mapview-telemetryparser{ext-relative}">mapview-telemetryparser</a> can work
+<p><a href="mapview-telemetryparser.html">mapview-telemetryparser</a> can work
 with any audio modem which can output decodes to the <strong>standard output stream</strong>.
 It does this by spawning an instance of the modem and processing its output
 line-by-line.</p>
@@ -581,7 +581,7 @@ to.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-02-06 19:44:54 EST
+Last updated 2015-02-06 19:47:15 EST
 </div>
 </div>
 </body>
