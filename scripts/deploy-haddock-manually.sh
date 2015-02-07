@@ -13,11 +13,11 @@ mv dist/doc/html/mapview/* "$f/mapview.git/haddock"
 pushd "$f/mapview.git"
   git checkout master -- doc
   pushd doc
-    asciidoctor -a ext-relative=.html *.adoc
+    asciidoctor -r asciidoctor-diagram -a ext-relative=.html *.adoc
     cp Introduction.html index.html
     rm *.adoc
   popd
-  mv doc/*.html .
+  mv doc/* .
   rmdir doc
   echo 'mapview.noexc.org' > CNAME
   git add -A
