@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.2">
-<title>Introduction to MapView</title>
+<title>MapView Configuration</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -412,21 +412,29 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-right">
 <div id="header">
-<h1>Introduction to MapView</h1>
+<h1>MapView Configuration</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_components">Components</a>
+<li><a href="#__code_gpsd_code"><code>gpsd</code></a>
 <ul class="sectlevel2">
-<li><a href="#_mapview_the_library">mapview: The Library</a></li>
-<li><a href="#_mapview_telemetryparser">mapview-telemetryparser</a></li>
-<li><a href="#_mapview_send">mapview-send</a></li>
-<li><a href="#_mapview_generate_charts">mapview-generate-charts</a></li>
-<li><a href="#_mapview_psc">mapview-psc</a></li>
+<li><a href="#__code_coordinates_history_code"><code>coordinates-history</code></a></li>
 </ul>
 </li>
-<li><a href="#_bugs_comments_issues">Bugs, Comments, Issues</a></li>
-<li><a href="#_licensing">Licensing</a></li>
+<li><a href="#__code_telemetry_code"><code>telemetry</code></a>
+<ul class="sectlevel2">
+<li><a href="#__code_coordinates_history_code_2"><code>coordinates-history</code></a></li>
+<li><a href="#__code_raw_log_code"><code>raw-log</code></a></li>
+<li><a href="#__code_working_coordinates_code"><code>working-coordinates</code></a></li>
+<li><a href="#__code_modem_command_code_and_code_modem_flags_code"><code>modem-command</code> and <code>modem-flags</code></a></li>
+</ul>
+</li>
+<li><a href="#__code_websockets_code"><code>websockets</code></a>
+<ul class="sectlevel2">
+<li><a href="#__code_port_code"><code>port</code></a></li>
+<li><a href="#__code_host_code"><code>host</code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -434,164 +442,139 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p><a href="https://github.com/noexc/mapview">MapView</a> is an on-the-ground telemetry
-reception system for
-<a href="https://en.wikipedia.org/wiki/High-altitude_balloon">high-altitude balloon projects</a>.
-It is meant to be used by those with an interest in HAB chases, as a means of
-tracking and following the balloon during a flight.</p>
+<p>MapView&#8217;s components are configured view <code>mapview.conf</code>. This one (simple)
+configuration file contains the settings for all components of the system.</p>
 </div>
 <div class="paragraph">
-<p>It consists of several individual components, some of which interoperate with
-each other, and some of which can be run independently during and after a
-balloon chase.</p>
+<p>Our configuration is parsed by the
+<a href="https://hackage.haskell.org/package/configurator">configurator</a> Haskell
+library by Bryan O&#8217;Sullivan.</p>
 </div>
 <div class="paragraph">
-<p>MapView is written from a standpoint that prefers stability (and correctness)
-and modularity over speed and ease of installation. Because of this, setting it
-up for the first time can be daunting, particularly if you are not familiar with
-building and installing Haskell packages.</p>
-</div>
-<div class="paragraph">
-<p>It is our hope that this documentation makes the process as pain-free as
-possible, but we invite and encourage questions about the process in the
-<a href="irc://irc.freenode.net/noexc">#noexc channel on freenode</a>.</p>
+<p>The configuration file is currently broken into three sections. We describe them
+below.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_components">Components</h2>
+<h2 id="__code_gpsd_code"><code>gpsd</code></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>MapView is built in a particularly modular way as
-<a href="http://noexc.org/">our own</a> requirements change fairly often. Typically, we
-experiment with new technologies and telemetry systems on each flight we
-perform, and it is important that we are able to compensate for these changes
-quickly, and reflect them in the MapView codebase with relative ease.</p>
-</div>
-<div class="paragraph">
-<p>Here we give a brief overview of each component. Each component has its own
-documentation file with more information about the role it plays.</p>
-</div>
-<div class="paragraph">
-<p>Programs (each of which is considered an individual component) which ship with
-MapView, as a rule, are all prefixed with <code>mapview-</code>. For example,
-<code>mapview-telemetryparser</code> is the program (component) which parses raw telemetry
-in realtime during a flight.</p>
-</div>
-<div class="paragraph">
-<p>We don&#8217;t currently make use of any kind of real "IPC" framework. Instead, we
-write out state to files (usually in JSON) and listen for changes to these files
-in various components. In the future, we could optionally make use of something
-along the lines of <code>dbus</code> for dealing with IPC, if there is a need/want.</p>
+<p>The <code>gpsd</code> section of the configuration file sets up MapView&#8217;s (optional)
+interaction with the <a href="http://www.catb.org/gpsd/"><code>gpsd</code></a> daemon. For more
+information about our usage of <code>gpsd</code>, see <a href="GPSD{ext-relative}">GPSD</a>.</p>
 </div>
 <div class="sect2">
-<h3 id="_mapview_the_library">mapview: The Library</h3>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-We also publish <a href="/haddock">haddock</a> documentation for this
-library.
-</td>
-</tr>
-</table>
-</div>
+<h3 id="__code_coordinates_history_code"><code>coordinates-history</code></h3>
 <div class="paragraph">
-<p>There is a common library used by all components. This includes, for example,
-pieces of code for handling
-<a href="https://en.wikipedia.org/wiki/Cyclic_redundancy_check">CRC</a> validation,
-parsing of raw telemetry data, configuration file parsing, and datatypes and
-typeclasses which are reused throughout the various components.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_mapview_telemetryparser">mapview-telemetryparser</h3>
-<div class="paragraph">
-<p><code>mapview-telemetryparser</code> is the program which parses raw telemetry data during
-a flight. In short, it shells out to some modem (<code>minimodem</code> by default. See the
-<a href="Configuration{ext-relative}">Configuration</a> documentation for details) and
-parses anything that the modem sends to <code>STDOUT</code>. If the parse is successful&#8201;&#8212;&#8201;that is, if we receive a valid packet from the HAB telemetry which passes the
-CRC check&#8201;&#8212;&#8201;it writes out a JSON representation of this packet to the file
-specified in <code>mapview.conf</code>. If the parse fails, it writes the error to the
-terminal, with a short description of why (provided by the
-<a href="https://hackage.haskell.org/package/trifecta">Trifecta</a> library).</p>
-</div>
-<div class="paragraph">
-<p><code>mapview-telemetryparser</code> also saves a raw log of the modem output, for later
-processing. We use this, for example, in <code>mapview-generate-charts</code> for making
-graphs of flight data post-factum.</p>
-</div>
-<div class="paragraph">
-<p>Lastly, <code>mapview-telemetryparser</code> writes a third file which is a list of all
-coordinates obtained from the balloon thus far. It does this by reading the file
-and prepending the latest successfully parsed set of coordinates to it, then
-writing the result. We do this so that when one refreshes any of the map viewing
-interfaces (such as <code>mapview-psc</code>), they are able to see a trail of where the
-balloon has been.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_mapview_send">mapview-send</h3>
-<div class="paragraph">
-<p><code>mapview-send</code> listens for changes to the files updated by
-<code>mapview-telemetryparser</code> and sends appropriate updates to all clients who are
-viewing a frontend. That is, a frontend implementation must connect (via
-websockets) to a server that <code>mapview-send</code> starts. When <code>mapview-send</code> detects
-changes to relevant files, it puts them into a format that frontend clients can
-understand. The frontend can then update its view based on this information.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_mapview_generate_charts">mapview-generate-charts</h3>
-<div class="paragraph">
-<p><code>mapview-generate-charts</code> is usually used post-factum. When a flight completes,
-<code>mapview-generate-charts</code> will re-run the raw telemetry log and parse it again,
-graphing certain things such as altitude and temperature.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_mapview_psc">mapview-psc</h3>
-<div class="paragraph">
-<p>Our official frontend is maintained in a
-<a href="https://github.com/noexc/mapview-psc">separate repository</a> from MapView
-itself, though changes in one repository and sometimes require changes in the
-other.</p>
-</div>
-<div class="paragraph">
-<p>It is written in <a href="http://purescript.org">PureScript</a>, a strongly typed
-programming language which compiles down to JavaScript.</p>
-</div>
-<div class="paragraph">
-<p>mapview-psc can be considered a "reference frontend," if you will. The frontend
-is one of the simplest parts of MapView, and those with specific needs could
-easily write their own, so long as it can connect to the <code>mapview-send</code>
-websockets server.</p>
+<p><code>gpsd.coordinates-history</code> defines where we save GPSD coordinates to. These
+coordinates are those of the HAB chase vehicle and allow a frontend to display
+the chase vehicle&#8217;s location so that it can be visually compared to the location
+of the balloon.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_bugs_comments_issues">Bugs, Comments, Issues</h2>
+<h2 id="__code_telemetry_code"><code>telemetry</code></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Please, please, <strong>please</strong> report any bugs or issues to our GitHub repositories
-(mapview for the backend, mapview-psc for the frontend). We cannot fix or
-discuss issues unless we know that you are having them!</p>
+<p>The <code>telemetry</code> section of the configuration file deals with gathering data from
+an HAB downlink. Currently
+<a href="https://github.com/noexc/mapview/issues/16">only one downlink</a> is able to
+be used at a time. If this is an issue for you, please chime in on the linked
+issue.</p>
+</div>
+<div class="sect2">
+<h3 id="__code_coordinates_history_code_2"><code>coordinates-history</code></h3>
+<div class="paragraph">
+<p><code>telemetry.coordinates-history</code> is the location of a file which tracks pairs of
+coordinates we have received from the balloon. The file (discussed more in
+<a href="mapview-telemetryparser{ext-relative}">mapview-telemetryparser</a>) is a JSON
+file to which <code>mapview-telemetryparser</code> prepends a pair of GPS coordinates each
+time it receives a successful packet from the telemetry downlink. It is used
+for sending the path history of the balloon to frontends.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="__code_raw_log_code"><code>raw-log</code></h3>
+<div class="paragraph">
+<p>In addition to keeping state in various files and formats, MapView also logs an
+exact copy of every line. This is for record-keeping purposes but also to enable
+additional processing after a flight has completed, perhaps in ways that hadn&#8217;t
+been previously thought of. <code>telemetry.raw-log</code> is the path of this raw log.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="__code_working_coordinates_code"><code>working-coordinates</code></h3>
+<div class="paragraph">
+<p>We <a href="Definitions{ext-relative}">define</a> the "working coordinates" of the
+balloon to be the coordinates received in the last <strong>successful</strong> parse.
+<code>telemetry.working-coordinates</code>, then, is the path of the file which contains
+the latest pair of working coordinates (and other information from the last
+packet). It is updated by
+<a href="mapview-telemetryparser{ext-relative}">mapview-telemetryparser</a> on each
+successful parse and changes to it are listened for by
+<a href="mapview-send{ext-relative}">mapview-send</a> and sent out to connected
+frontends.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="__code_modem_command_code_and_code_modem_flags_code"><code>modem-command</code> and <code>modem-flags</code></h3>
+<div class="paragraph">
+<p><a href="mapview-telemetryparser{ext-relative}">mapview-telemetryparser</a> can work
+with any audio modem which can output decodes to the <strong>standard output stream</strong>.
+It does this by spawning an instance of the modem and processing its output
+line-by-line.</p>
 </div>
 <div class="paragraph">
-<p>General comments and questions can (and should! We don&#8217;t bite!) be asked on our
-<a href="//irc.freenode.net/noexc">IRC channel</a>, #noexc on freenode.</p>
+<p>Then, <code>telemetry.modem-command</code> is the program name of the modem that gets
+spawned and <code>telemetry.modem-flags</code> is a list of arguments that it gets spawned
+with.</p>
+</div>
+<div class="paragraph">
+<p>Known working (example) configurations are:</p>
+</div>
+<div class="sect3">
+<h4 id="__a_href_http_www_whence_com_minimodem_minimodem_a"><a href="http://www.whence.com/minimodem/">minimodem</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre>  modem-command = "minimodem"
+  modem-flags = ["-r", "-q", "rtty", "-S", "700", "-M", "870"]</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="__a_href_http_www_w1hkj_com_fldigi_html_fldigi_a"><a href="http://www.w1hkj.com/Fldigi.html">Fldigi</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre>  modem-command = "fldigi-shell"
+  modem-flags = ["-c", "poll"]</pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_licensing">Licensing</h2>
+<h2 id="__code_websockets_code"><code>websockets</code></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>MapView and mapview-psc are both made available under the MIT license.</p>
+<p>This section controls how `mapview-send&#8217;s websocket server works.</p>
+</div>
+<div class="sect2">
+<h3 id="__code_port_code"><code>port</code></h3>
+<div class="paragraph">
+<p>The <code>websockets.port</code> setting controls the port that the websocket server
+listens on, for connections.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="__code_host_code"><code>host</code></h3>
+<div class="paragraph">
+<p>The <code>websockets.host</code> setting controls the IP that the websocket server binds
+to.</p>
+</div>
 </div>
 </div>
 </div>

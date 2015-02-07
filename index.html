@@ -512,13 +512,12 @@ typeclasses which are reused throughout the various components.</p>
 <div class="paragraph">
 <p><code>mapview-telemetryparser</code> is the program which parses raw telemetry data during
 a flight. In short, it shells out to some modem (<code>minimodem</code> by default. See the
-documentation for Configuration for details) and parses anything that the modem
-sends to <code>STDOUT</code>. If the parse is successful&#8201;&#8212;&#8201;that is, if we receive a valid
-packet from the HAB telemetry which passes the CRC check&#8201;&#8212;&#8201;it writes out a JSON
-representation of this packet to the file specified in <code>mapview.conf</code>. If the
-parse fails, it writes the error to the terminal, with a short description of
-why (provided by the <a href="https://hackage.haskell.org/package/trifecta">Trifecta</a>
-library).</p>
+<a href="Configuration{ext-relative}">Configuration</a> documentation for details) and
+parses anything that the modem sends to <code>STDOUT</code>. If the parse is successful&#8201;&#8212;&#8201;that is, if we receive a valid packet from the HAB telemetry which passes the
+CRC check&#8201;&#8212;&#8201;it writes out a JSON representation of this packet to the file
+specified in <code>mapview.conf</code>. If the parse fails, it writes the error to the
+terminal, with a short description of why (provided by the
+<a href="https://hackage.haskell.org/package/trifecta">Trifecta</a> library).</p>
 </div>
 <div class="paragraph">
 <p><code>mapview-telemetryparser</code> also saves a raw log of the modem output, for later
@@ -599,7 +598,7 @@ discuss issues unless we know that you are having them!</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-02-06 14:17:00 EST
+Last updated 2015-02-06 19:33:59 EST
 </div>
 </div>
 </body>
