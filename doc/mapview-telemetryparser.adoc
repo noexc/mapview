@@ -8,6 +8,42 @@ calls out to some audio modem program and processes packets that come in.
 
 `mapview-telemetryparser` plays several important roles in the system.
 
+Below, we summarize each role that `mapview-telemetryparser` plays. But for
+those of you who like pretty pictures, let's try this:
+
+[ditaa]
+----
++-------------+   +-------------------------+
+| audio modem |-->+ mapview-telemetryparser +
++-------------+   +-------------------------+
+                             |
+                             v
+                        +---------+
+                        | Raw log |
+                        +---------+
+                             |
+                             v
+                         +-------+
+                         | Parse |
+                         +-------+
+                         /        \
+                  +---------+     +------+
+                  | Success |     | Fail |
+                  +---------+     +------+
+                      /              \
+                +-------+          +-------+
+                | Print |          | Print |
+                +-------+          +-------+
+                   /
+      +---------------------+
+      | Working Coordinates |
+      +---------------------+
+               /
+     +--------------------+
+     | Coordinate History |
+     +--------------------+
+----
+
 == Parsing
 
 As the name implies, `mapview-telemetryparser` parses incoming packets from some
