@@ -1,0 +1,103 @@
+:toc: right
+:icons: font
+
+= MapView Configuration
+
+MapView's components are configured view `mapview.conf`. This one (simple)
+configuration file contains the settings for all components of the system.
+
+Our configuration is parsed by the
+link:https://hackage.haskell.org/package/configurator[configurator] Haskell
+library by Bryan O'Sullivan.
+
+The configuration file is currently broken into three sections. We describe them
+below.
+
+== `gpsd`
+
+The `gpsd` section of the configuration file sets up MapView's (optional)
+interaction with the link:http://www.catb.org/gpsd/[`gpsd`] daemon. For more
+information about our usage of `gpsd`, see link:GPSD{ext-relative}[GPSD].
+
+=== `coordinates-history`
+
+`gpsd.coordinates-history` defines where we save GPSD coordinates to. These
+coordinates are those of the HAB chase vehicle and allow a frontend to display
+the chase vehicle's location so that it can be visually compared to the location
+of the balloon.
+
+== `telemetry`
+
+The `telemetry` section of the configuration file deals with gathering data from
+an HAB downlink. Currently
+link:https://github.com/noexc/mapview/issues/16[only one downlink] is able to
+be used at a time. If this is an issue for you, please chime in on the linked
+issue.
+
+=== `coordinates-history`
+
+`telemetry.coordinates-history` is the location of a file which tracks pairs of
+coordinates we have received from the balloon. The file (discussed more in
+link:mapview-telemetryparser{ext-relative}[mapview-telemetryparser]) is a JSON
+file to which `mapview-telemetryparser` prepends a pair of GPS coordinates each
+time it receives a successful packet from the telemetry downlink. It is used
+for sending the path history of the balloon to frontends.
+
+=== `raw-log`
+
+In addition to keeping state in various files and formats, MapView also logs an
+exact copy of every line. This is for record-keeping purposes but also to enable
+additional processing after a flight has completed, perhaps in ways that hadn't
+been previously thought of. `telemetry.raw-log` is the path of this raw log.
+
+=== `working-coordinates`
+
+We link:Definitions{ext-relative}[define] the "working coordinates" of the
+balloon to be the coordinates received in the last **successful** parse.
+`telemetry.working-coordinates`, then, is the path of the file which contains
+the latest pair of working coordinates (and other information from the last
+packet). It is updated by
+link:mapview-telemetryparser{ext-relative}[mapview-telemetryparser] on each
+successful parse and changes to it are listened for by
+link:mapview-send{ext-relative}[mapview-send] and sent out to connected
+frontends.
+
+=== `modem-command` and `modem-flags`
+
+link:mapview-telemetryparser{ext-relative}[mapview-telemetryparser] can work
+with any audio modem which can output decodes to the **standard output stream**.
+It does this by spawning an instance of the modem and processing its output
+line-by-line.
+
+Then, `telemetry.modem-command` is the program name of the modem that gets
+spawned and `telemetry.modem-flags` is a list of arguments that it gets spawned
+with.
+
+Known working (example) configurations are:
+
+==== link:http://www.whence.com/minimodem/[minimodem]
+
+----
+  modem-command = "minimodem"
+  modem-flags = ["-r", "-q", "rtty", "-S", "700", "-M", "870"]
+----
+
+==== link:http://www.w1hkj.com/Fldigi.html[Fldigi]
+----
+  modem-command = "fldigi-shell"
+  modem-flags = ["-c", "poll"]
+----
+
+== `websockets`
+
+This section controls how `mapview-send`'s websocket server works.
+
+=== `port`
+
+The `websockets.port` setting controls the port that the websocket server
+listens on, for connections.
+
+=== `host`
+
+The `websockets.host` setting controls the IP that the websocket server binds
+to.

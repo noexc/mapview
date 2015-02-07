@@ -58,13 +58,13 @@ typeclasses which are reused throughout the various components.
 
 `mapview-telemetryparser` is the program which parses raw telemetry data during
 a flight. In short, it shells out to some modem (`minimodem` by default. See the
-documentation for Configuration for details) and parses anything that the modem
-sends to `STDOUT`. If the parse is successful -- that is, if we receive a valid
-packet from the HAB telemetry which passes the CRC check -- it writes out a JSON
-representation of this packet to the file specified in `mapview.conf`. If the
-parse fails, it writes the error to the terminal, with a short description of
-why (provided by the link:https://hackage.haskell.org/package/trifecta[Trifecta]
-library).
+link:Configuration{ext-relative}[Configuration] documentation for details) and
+parses anything that the modem sends to `STDOUT`. If the parse is successful --
+that is, if we receive a valid packet from the HAB telemetry which passes the
+CRC check -- it writes out a JSON representation of this packet to the file
+specified in `mapview.conf`. If the parse fails, it writes the error to the
+terminal, with a short description of why (provided by the
+link:https://hackage.haskell.org/package/trifecta[Trifecta] library).
 
 `mapview-telemetryparser` also saves a raw log of the modem output, for later
 processing. We use this, for example, in `mapview-generate-charts` for making
