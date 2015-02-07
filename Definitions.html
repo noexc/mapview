@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.2">
-<title>Introduction to MapView</title>
+<title>Definitions</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -412,213 +412,21 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-right">
 <div id="header">
-<h1>Introduction to MapView</h1>
+<h1>Definitions</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_history">History</a></li>
-<li><a href="#_components">Components</a>
-<ul class="sectlevel2">
-<li><a href="#_mapview_the_library">mapview: The Library</a></li>
-<li><a href="#_mapview_telemetryparser">mapview-telemetryparser</a></li>
-<li><a href="#_mapview_send">mapview-send</a></li>
-<li><a href="#_mapview_generate_charts">mapview-generate-charts</a></li>
-<li><a href="#_mapview_psc">mapview-psc</a></li>
-</ul>
-</li>
-<li><a href="#_bugs_comments_issues">Bugs, Comments, Issues</a></li>
-<li><a href="#_licensing">Licensing</a></li>
+<li><a href="#_working_coordinates">Working coordinates</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p><a href="https://github.com/noexc/mapview">MapView</a> is an on-the-ground telemetry
-reception system for
-<a href="https://en.wikipedia.org/wiki/High-altitude_balloon">high-altitude balloon projects</a>.
-It is meant to be used by those with an interest in HAB chases, as a means of
-tracking and following the balloon during a flight.</p>
-</div>
-<div class="paragraph">
-<p>It consists of several individual components, some of which interoperate with
-each other, and some of which can be run independently during and after a
-balloon chase.</p>
-</div>
-<div class="paragraph">
-<p>MapView is written from a standpoint that prefers stability (and correctness)
-and modularity over speed and ease of installation. Because of this, setting it
-up for the first time can be daunting, particularly if you are not familiar with
-building and installing Haskell packages.</p>
-</div>
-<div class="paragraph">
-<p>It is our hope that this documentation makes the process as pain-free as
-possible, but we invite and encourage questions about the process in the
-<a href="irc://irc.freenode.net/noexc">#noexc channel on freenode</a>.</p>
-</div>
-</div>
-</div>
 <div class="sect1">
-<h2 id="_history">History</h2>
+<h2 id="_working_coordinates">Working coordinates</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>MapView began its life as a project for the University of Akron Amateur Radio
-club&#8217;s "HABP-<strong>n</strong>" series of balloon flights. These flights were conducted yearly
-and there was a need for an effective and easy way to track the balloon.</p>
-</div>
-<div class="paragraph">
-<p>Ricky Elrod, N8SQL, wrote a prototype of the project in NodeJS as an experiment,
-having never coded in NodeJS. The prototype got positive feedback, but Ricky
-ended up realizing that NodeJS would not be a viable platform to meet the goals
-of the project. A rewrite in Haskell was started on
-<a href="https://github.com/noexc/mapview/commit/3df37823aa9bf596406cc5dbdeed004d5a167517">January 20, 2014</a>
-and has been in active development ever since.</p>
-</div>
-<div class="paragraph">
-<p>Alumni and former students of the University of Akron formed a new club, the
-<a href="https://noexc.org/">Northeast Ohio Experimenters Club</a>, and maintenance
-of MapView and related projects has continued under that name. The project
-continues to be led by Ricky Elrod as new NOEXC flights incorporate new and
-interesting requirements. MapView is and always will be free and open source
-software and we welcome and encourage questions, contributions, and comments.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_components">Components</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>MapView is built in a particularly modular way as
-<a href="http://noexc.org/">our own</a> requirements change fairly often. Typically, we
-experiment with new technologies and telemetry systems on each flight we
-perform, and it is important that we are able to compensate for these changes
-quickly, and reflect them in the MapView codebase with relative ease.</p>
-</div>
-<div class="paragraph">
-<p>Here we give a brief overview of each component. Each component has its own
-documentation file with more information about the role it plays.</p>
-</div>
-<div class="paragraph">
-<p>Programs (each of which is considered an individual component) which ship with
-MapView, as a rule, are all prefixed with <code>mapview-</code>. For example,
-<code>mapview-telemetryparser</code> is the program (component) which parses raw telemetry
-in realtime during a flight.</p>
-</div>
-<div class="paragraph">
-<p>We don&#8217;t currently make use of any kind of real "IPC" framework. Instead, we
-write out state to files (usually in JSON) and listen for changes to these files
-in various components. In the future, we could optionally make use of something
-along the lines of <code>dbus</code> for dealing with IPC, if there is a need/want.</p>
-</div>
-<div class="sect2">
-<h3 id="_mapview_the_library">mapview: The Library</h3>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-We also publish <a href="/haddock">haddock</a> documentation for this
-library.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>There is a common library used by all components. This includes, for example,
-pieces of code for handling
-<a href="https://en.wikipedia.org/wiki/Cyclic_redundancy_check">CRC</a> validation,
-parsing of raw telemetry data, configuration file parsing, and datatypes and
-typeclasses which are reused throughout the various components.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_mapview_telemetryparser">mapview-telemetryparser</h3>
-<div class="paragraph">
-<p><code>mapview-telemetryparser</code> is the program which parses raw telemetry data during
-a flight. In short, it shells out to some modem (<code>minimodem</code> by default. See the
-<a href="Configuration.html">Configuration</a> documentation for details) and
-parses anything that the modem sends to <code>STDOUT</code>. If the parse is successful&#8201;&#8212;&#8201;that is, if we receive a valid packet from the HAB telemetry which passes the
-CRC check&#8201;&#8212;&#8201;it writes out a JSON representation of this packet to the file
-specified in <code>mapview.conf</code>. If the parse fails, it writes the error to the
-terminal, with a short description of why (provided by the
-<a href="https://hackage.haskell.org/package/trifecta">Trifecta</a> library).</p>
-</div>
-<div class="paragraph">
-<p><code>mapview-telemetryparser</code> also saves a raw log of the modem output, for later
-processing. We use this, for example, in <code>mapview-generate-charts</code> for making
-graphs of flight data post-factum.</p>
-</div>
-<div class="paragraph">
-<p>Lastly, <code>mapview-telemetryparser</code> writes a third file which is a list of all
-coordinates obtained from the balloon thus far. It does this by reading the file
-and prepending the latest successfully parsed set of coordinates to it, then
-writing the result. We do this so that when one refreshes any of the map viewing
-interfaces (such as <code>mapview-psc</code>), they are able to see a trail of where the
-balloon has been.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_mapview_send">mapview-send</h3>
-<div class="paragraph">
-<p><code>mapview-send</code> listens for changes to the files updated by
-<code>mapview-telemetryparser</code> and sends appropriate updates to all clients who are
-viewing a frontend. That is, a frontend implementation must connect (via
-websockets) to a server that <code>mapview-send</code> starts. When <code>mapview-send</code> detects
-changes to relevant files, it puts them into a format that frontend clients can
-understand. The frontend can then update its view based on this information.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_mapview_generate_charts">mapview-generate-charts</h3>
-<div class="paragraph">
-<p><code>mapview-generate-charts</code> is usually used post-factum. When a flight completes,
-<code>mapview-generate-charts</code> will re-run the raw telemetry log and parse it again,
-graphing certain things such as altitude and temperature.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_mapview_psc">mapview-psc</h3>
-<div class="paragraph">
-<p>Our official frontend is maintained in a
-<a href="https://github.com/noexc/mapview-psc">separate repository</a> from MapView
-itself, though changes in one repository and sometimes require changes in the
-other.</p>
-</div>
-<div class="paragraph">
-<p>It is written in <a href="http://purescript.org">PureScript</a>, a strongly typed
-programming language which compiles down to JavaScript.</p>
-</div>
-<div class="paragraph">
-<p>mapview-psc can be considered a "reference frontend," if you will. The frontend
-is one of the simplest parts of MapView, and those with specific needs could
-easily write their own, so long as it can connect to the <code>mapview-send</code>
-websockets server.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_bugs_comments_issues">Bugs, Comments, Issues</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Please, please, <strong>please</strong> report any bugs or issues to our GitHub repositories
-(mapview for the backend, mapview-psc for the frontend). We cannot fix or
-discuss issues unless we know that you are having them!</p>
-</div>
-<div class="paragraph">
-<p>General comments and questions can (and should! We don&#8217;t bite!) be asked on our
-<a href="//irc.freenode.net/noexc">IRC channel</a>, #noexc on freenode.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_licensing">Licensing</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>MapView and mapview-psc are both made available under the MIT license.</p>
+<p><strong>*Working coorindates</strong> are the coordinates with which we are able to work. That
+is, the coordinates we receive after the last <em>successful</em> packet parse.</p>
 </div>
 </div>
 </div>
