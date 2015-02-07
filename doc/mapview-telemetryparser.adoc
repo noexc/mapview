@@ -30,7 +30,7 @@ test cases for future development.
 
 NOTE: Raw log recording happens **whether or not** a parse was successful.
 
-== link:Definitions{ext-relative}#_working_coordinates[Working coordinates]
+== Working Coordinates [link:Definitions{ext-relative}#_working_coordinates[huh?]]
 
 After a successful parse, `mapview-telemetryparser` updates the
 link:Configuration{ext-relative}#__code_working_coordinates_code[working
