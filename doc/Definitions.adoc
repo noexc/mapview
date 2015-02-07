@@ -1,0 +1,9 @@
+:toc: right
+:icons: font
+
+= Definitions
+
+== Working coordinates
+
+**Working coorindates* are the coordinates with which we are able to work. That
+is, the coordinates we receive after the last __successful__ packet parse.

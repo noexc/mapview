@@ -1,0 +1,61 @@
+:toc: right
+:icons: font
+
+= `mapview-telemetryparser`
+
+Perhaps the most important component of all, `mapview-telemetryparser` is what
+calls out to some audio modem program and processes packets that come in.
+
+`mapview-telemetryparser` plays several important roles in the system.
+
+== Parsing
+
+As the name implies, `mapview-telemetryparser` parses incoming packets from some
+audio modem. To do this, it first spawns an audio modem program (such as
+minimodem or fldigi -- this is
+link:Configuration{ext-relative}#__code_modem_command_code_and_code_modem_flags_code[configurable]
+via `telemetry.modem-command` and `telemetry.modem-flags`). After spawning an
+audio modem program, it listens to output by the modem to the standard output
+stream (STDOUT). After each newline (`\n`), a parse is attempted.
+
+== Raw log recording
+
+After each newline fed to `mapview-telemetryparser` by the audio modem program,
+`mapview-telemetryparser` writes out the line it received to the raw telemetry
+log (the path is
+link:Configuration{ext-relative}#__code_raw_log_code[configurable]). This is
+done so that post-processing programs can replay the log if necessary to pull
+extra information out of it. It also serves as an easy way to have replay-able
+test cases for future development.
+
+NOTE: Raw log recording happens **whether or not** a parse was successful.
+
+== link:Definitions{ext-relative}#_working_coordinates[Working coordinates]
+
+After a successful parse, `mapview-telemetryparser` updates the
+link:Configuration{ext-relative}#__code_working_coordinates_code[working
+coordinates] file. This file gets used by
+link:mapview-send{ext-relative}[mapview-send] which listens for changes to it
+and, upon seeing a change, sends out the latest contents of the file via
+websockets to all connected frontend clients.
+
+== Coordinate history recording
+
+After each successful parse, `mapview-telemetryparser` prepends the latest set
+of coordinates to the JSON array located within the
+link:Configuration{ext-relative}#__code_coordinates_history_code_2[coordinate
+history] file. This file is sent to all frontend clients when they connect, so
+that they can see the track the balloon has taken up to this point. We aim to
+minimize the contents of this file because we expect the file to already become
+large just by the number of coordinates it might contain from start-of-flight to
+end-of-flight.
+
+== Status printing
+
+The last thing `mapview-telemetryparser` does is print the status of each parse
+attempt to standard out (STDOUT). If a parse is successful, it shows the data
+MapView will work with from that point forward until the next packet
+comes in. The representation is simply a derived `Show` instance.
+
+In the event of a parse failure, a descriptive error will show up and the system
+will simply wait until the next newline and try to parse the next packet.
