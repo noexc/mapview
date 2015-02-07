@@ -13,7 +13,7 @@ mv dist/doc/html/mapview/* "$f/mapview.git/haddock"
 pushd "$f/mapview.git"
   git checkout master -- doc
   pushd doc
-    asciidoctor *.adoc
+    asciidoctor -a ext-relative=.html *.adoc
     cp Introduction.html index.html
     rm *.adoc
   popd
