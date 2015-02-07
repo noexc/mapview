@@ -434,6 +434,43 @@ calls out to some audio modem program and processes packets that come in.</p>
 <div class="paragraph">
 <p><code>mapview-telemetryparser</code> plays several important roles in the system.</p>
 </div>
+<div class="paragraph">
+<p>Below, we summarize each role that <code>mapview-telemetryparser</code> plays. But for
+those of you who like pretty pictures, let&#8217;s try this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>+-------------+   +-------------------------+
+| audio modem |--&gt;+ mapview-telemetryparser +
++-------------+   +-------------------------+
+                             |
+                             v
+                        +---------+
+                        | Raw log |
+                        +---------+
+                             |
+                             v
+                         +-------+
+                         | Parse |
+                         +-------+
+                         /        \
+                  +---------+     +------+
+                  | Success |     | Fail |
+                  +---------+     +------+
+                      /              \
+                +-------+          +-------+
+                | Print |          | Print |
+                +-------+          +-------+
+                   /
+      +---------------------+
+      | Working Coordinates |
+      +---------------------+
+               /
+     +--------------------+
+     | Coordinate History |
+     +--------------------+</pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -522,7 +559,7 @@ will simply wait until the next newline and try to parse the next packet.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-02-07 00:01:53 EST
+Last updated 2015-02-07 00:23:57 EST
 </div>
 </div>
 </body>
