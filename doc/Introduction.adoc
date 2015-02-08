@@ -106,7 +106,7 @@ websockets) to a server that `mapview-send` starts. When `mapview-send` detects
 changes to relevant files, it puts them into a format that frontend clients can
 understand. The frontend can then update its view based on this information.
 
-=== mapview-generate-charts
+=== mapview-generate-charts [link:mapview-generate-charts{ext-relative}[main]]
 
 `mapview-generate-charts` is usually used post-factum. When a flight completes,
 `mapview-generate-charts` will re-run the raw telemetry log and parse it again,
