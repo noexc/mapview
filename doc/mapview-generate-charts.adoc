@@ -1,0 +1,20 @@
+:toc: right
+:icons: font
+
+= `mapview-generate-charts`
+
+Generate pretty graphs containing information collected via telemetry downlink.
+
+== How it works
+
+`mapview-generate-charts` reparses the raw log and generates graphs using the
+awesome link:https://hackage.haskell.org/package/Chart[Chart] library. In the
+file, you'll find function definitions for various kinds of charts. You will
+need to modify these, assuming that your telemetry sends information differently
+than how NOEXC does it. The definitions should be fairly straightforward. Once
+you've modified it, simply run `mapview-generate-charts` and the charts will be
+placed in the `charts/` directory as SVG files.
+
+You can optionall call `mapview-generate-charts` with the `-w` flag which will
+tell it to output MediaWiki markup for a gallery view of the images, at the same
+time, though uploading the images to a wiki is still a manual process.
