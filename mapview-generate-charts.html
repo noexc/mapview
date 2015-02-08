@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.2">
-<title>Definitions</title>
+<title>mapview-generate-charts</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -412,21 +412,38 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-right">
 <div id="header">
-<h1>Definitions</h1>
+<h1><code>mapview-generate-charts</code></h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_working_coordinates">Working coordinates</a></li>
+<li><a href="#_how_it_works">How it works</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div class="sect1">
-<h2 id="_working_coordinates">Working coordinates</h2>
+<div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p><strong>Working coorindates</strong> are the coordinates with which we are able to work. That
-is, the coordinates we receive after the last <em>successful</em> packet parse.</p>
+<p>Generate pretty graphs containing information collected via telemetry downlink.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_it_works">How it works</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>mapview-generate-charts</code> reparses the raw log and generates graphs using the
+awesome <a href="https://hackage.haskell.org/package/Chart">Chart</a> library. In the
+file, you&#8217;ll find function definitions for various kinds of charts. You will
+need to modify these, assuming that your telemetry sends information differently
+than how NOEXC does it. The definitions should be fairly straightforward. Once
+you&#8217;ve modified it, simply run <code>mapview-generate-charts</code> and the charts will be
+placed in the <code>charts/</code> directory as SVG files.</p>
+</div>
+<div class="paragraph">
+<p>You can optionall call <code>mapview-generate-charts</code> with the <code>-w</code> flag which will
+tell it to output MediaWiki markup for a gallery view of the images, at the same
+time, though uploading the images to a wiki is still a manual process.</p>
 </div>
 </div>
 </div>
