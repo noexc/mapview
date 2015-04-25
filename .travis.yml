@@ -33,12 +33,14 @@ before_install:
 
   # Update happy
   - |
-    $CABAL install happy alex
-    export PATH=$HOME/.cabal/bin:$PATH
+    if [ $GHCVER = "head" ] || [ $GHCVER = "7.8.4" ] || [ $GHCVER = "7.10.1" ]; then
+      $CABAL install --constraint=transformers\ installed happy alex
+      export PATH=$HOME/.cabal/bin:$PATH
+    fi
 
 install:
   - git clone git://github.com/relrod/gpsd-haskell
-  - $CABAL install lens-4.6 ./gpsd-haskell
+  - $CABAL install lens-4.7 ./gpsd-haskell
   - $CABAL install HUnit # crc16 lib package is broken.
   - $CABAL install --dependencies-only --enable-tests
   - $CABAL configure -flib-Werror --enable-tests $MODE
