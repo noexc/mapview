@@ -3,7 +3,7 @@
 module KD8ZRC.Mapview.Types where
 
 import Control.Lens
-import Control.Monad (mzero, unless)
+import Control.Monad (mzero)
 import qualified Data.Aeson as A
 import qualified Data.Configurator as Cfg
 import qualified Data.Configurator.Types as Cfg
@@ -12,7 +12,7 @@ import qualified Data.Text as T
 import Data.Thyme.Clock
 import Data.Thyme.Format.Aeson ()
 import Options.Applicative
-import System.Directory (createDirectoryIfMissing, doesFileExist)
+import System.Directory (createDirectoryIfMissing)
 
 type Latitude  = Double
 type Longitude = Double
@@ -21,14 +21,14 @@ type Meters    = Double
 data Coordinates = Coordinates {
     _latitude  :: Latitude
   , _longitude :: Longitude
-  } deriving Show
+  } deriving (Eq, Show)
 makeLenses ''Coordinates
 
 data CoordinatesList = CoordinatesList {
     coordinatesList :: [Coordinates]
-    } deriving Show
+    } deriving (Eq, Show)
 
-newtype Celsius = Celsius { _degrees :: Double } deriving (Show)
+newtype Celsius = Celsius { _degrees :: Double } deriving (Eq, Show)
 makeLenses ''Celsius
 
 newtype TelemetryCRC = TelemetryCRC Integer deriving (Eq, Show)
@@ -48,7 +48,7 @@ data TelemetryLine = TelemetryLine {
   , _time        :: UTCTime
   , _temperature :: Celsius
   , _crc         :: CRCConfirmation
-  } deriving Show
+  } deriving (Eq, Show)
 makeLenses ''TelemetryLine
 
 -- TODO: lens-aeson?
@@ -81,10 +81,10 @@ data ConfigFileOptions =
                     , modem       :: String
                     , modemFlags  :: [String]
                     , gpsdHistory :: String
-                    }
+                    } deriving (Eq, Show)
 
 data CLIOptions =
-  CLIOptions String deriving (Show)
+  CLIOptions String deriving (Eq, Show)
 
 parseOptions :: Parser CLIOptions
 parseOptions =
@@ -123,13 +123,5 @@ runConfig (CLIOptions configFile') = do
 
   return (config, opts)
 
-createMissingDirectories :: ConfigFileOptions -> IO ()
-createMissingDirectories (ConfigFileOptions h r w _ _ g) =
-  mapM_ createFileIfMissing [h, r, w, g]
   where
-    createFileIfMissing p = do
-      doesExist <- doesFileExist p
-      unless doesExist $ writeFile p ""
-
-baseDir :: String -> String
-baseDir = init . dropWhileEnd (/= '/')
+    baseDir = init . dropWhileEnd (/= '/')
