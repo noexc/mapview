@@ -59,6 +59,19 @@ instance A.ToJSON Coordinates where
     , "lon" A..= lon
     ]
 
+instance A.ToJSON CRCConfirmation where
+  toJSON (CRCMatch n) =
+    A.object
+    [ "match" A..= True
+    , "crc"   A..= n
+    ]
+  toJSON (CRCMismatch (TelemetryCRC tc) (CalculatedCRC cc)) =
+    A.object
+    [ "match"    A..= False
+    , "received" A..= tc
+    , "expected" A..= cc
+    ]
+
 instance A.FromJSON Coordinates where
   parseJSON (A.Object v) = Coordinates <$>
                              v A..: "lat"
@@ -66,12 +79,13 @@ instance A.FromJSON Coordinates where
   parseJSON _            = mzero
 
 instance A.ToJSON TelemetryLine where
-  toJSON (TelemetryLine _ coord alt t (Celsius c) _) =
+  toJSON (TelemetryLine _ coord alt t (Celsius c) crc') =
     A.object
     [ "coordinates"    A..= coord
     , "altitude"       A..= alt
     , "time"           A..= t
     , "temperature"    A..= c
+    , "crc"            A..= crc'
     ]
 
 data ConfigFileOptions =
