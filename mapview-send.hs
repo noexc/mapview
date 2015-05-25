@@ -4,6 +4,7 @@ import Control.Concurrent
 import Control.Monad (forM_, forever, when)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Configurator as Cfg
+import Data.List (dropWhileEnd)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.UUID as UUID
@@ -102,3 +103,6 @@ talk opts conn state = forever $
       when (filename == workingPath opts) $ do
         json <- T.readFile (workingPath opts)
         WS.sendTextData conn json
+
+    baseDir :: String -> String
+    baseDir = init . dropWhileEnd (/= '/')
