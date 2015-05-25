@@ -96,9 +96,11 @@ data ConfigFileOptions =
                     , modemFlags  :: [String]
                     , gpsdHistory :: String
                     } deriving (Eq, Show)
+makeLenses ''ConfigFileOptions
 
-data CLIOptions =
+newtype CLIOptions =
   CLIOptions String deriving (Eq, Show)
+makeLenses ''CLIOptions
 
 parseOptions :: Parser CLIOptions
 parseOptions =
