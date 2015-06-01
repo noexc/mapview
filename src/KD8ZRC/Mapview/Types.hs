@@ -28,6 +28,9 @@ data CoordinatesList = CoordinatesList {
     coordinatesList :: [Coordinates]
     } deriving (Eq, Show)
 
+data LookangleCoordinates =
+  LookangleCoordinates Coordinates Meters deriving (Eq, Show)
+
 newtype Celsius = Celsius { _degrees :: Double } deriving (Eq, Show)
 makeLenses ''Celsius
 
@@ -57,6 +60,14 @@ instance A.ToJSON Coordinates where
     A.object
     [ "lat" A..= lat
     , "lon" A..= lon
+    ]
+
+instance A.ToJSON LookangleCoordinates where
+  toJSON (LookangleCoordinates (Coordinates lat lon) alt) =
+    A.object
+    [ "lat" A..= lat
+    , "lon" A..= lon
+    , "alt" A..= alt
     ]
 
 instance A.ToJSON CRCConfirmation where
@@ -89,12 +100,12 @@ instance A.ToJSON TelemetryLine where
     ]
 
 data ConfigFileOptions =
-  ConfigFileOptions { historyPath :: String
-                    , rawLogPath  :: String
-                    , workingPath :: String
-                    , modem       :: String
-                    , modemFlags  :: [String]
-                    , gpsdHistory :: String
+  ConfigFileOptions { historyPath     :: String
+                    , rawLogPath      :: String
+                    , workingPath     :: String
+                    , modem           :: String
+                    , modemFlags      :: [String]
+                    , gpsdCoordinates :: String
                     } deriving (Eq, Show)
 makeLenses ''ConfigFileOptions
 
@@ -126,7 +137,7 @@ runConfig (CLIOptions configFile') = do
   modemCommand <- Cfg.lookupDefault "minimodem" config "telemetry.modem-command"
   flags <- Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.modem-flags"
 
-  gpsdPath' <- Cfg.require config "gpsd.coordinates-history"
+  gpsdPath' <- Cfg.require config "gpsd.coordinates"
   createDirectoryIfMissing True (baseDir gpsdPath')
 
   let opts = ConfigFileOptions

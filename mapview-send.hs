@@ -100,9 +100,16 @@ talk opts conn state = forever $
     handle' :: COS.FilePath -> IO ()
     handle' fp = do
       let filename = COS.encodeString fp
+
+      -- Broadcast an update of actual downlink data
       when (filename == workingPath opts) $ do
         json <- T.readFile (workingPath opts)
         WS.sendTextData conn json
+
+      -- Broadcast an update of the chase car's current GPSD coordinates
+      when (filename == gpsdCoordinates opts) $ do
+        json <- T.readFile (gpsdCoordinates opts)
+        WS.sendTextData conn ("local:" <> json)
 
     baseDir :: String -> String
     baseDir = init . dropWhileEnd (/= '/')

@@ -9,15 +9,16 @@ import Network.GPSD.Types
 import Options.Applicative hiding (Failure, Parser, Success)
 import Pipes
 
-tpvToCoordinates :: Tpv -> Maybe Coordinates
+tpvToCoordinates :: Tpv -> Maybe LookangleCoordinates
 tpvToCoordinates tpv = do
   lat' <- tpvLat tpv
   lon' <- tpvLon tpv
-  return $ Coordinates lat' lon'
+  alt' <- tpvAlt tpv
+  return $ LookangleCoordinates (Coordinates lat' lon') alt'
 
-writeCoordinates :: ConfigFileOptions -> Maybe Coordinates -> IO ()
+writeCoordinates :: ConfigFileOptions -> Maybe LookangleCoordinates -> IO ()
 writeCoordinates cfg c =
-  forM_ c (LB.writeFile (gpsdHistory cfg) . encode)
+  forM_ c (LB.writeFile (gpsdCoordinates cfg) . encode)
 
 main :: IO ()
 main = execParser opts >>= runMain
