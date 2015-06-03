@@ -50,20 +50,16 @@ parseLine = do
   time' <- many (token digit)
   _ <- colon
 
-  celsius <- eitherToNum <$> integerOrDouble
+  crc16T <- number 16 hexDigit
   _ <- colon
 
-  crc16T <- char '0' *> oneOf "xX" *> number 16 hexDigit
-  _ <- colon
-
-  crc16C <- crcHaskell . dropWhileEnd (/= ':') . init . BRC.unpack <$> line
+  crc16C <- crcHaskell . dropWhileEnd (/= ':') . init . tail . BRC.unpack <$> line
 
   return $ return $ TelemetryLine
     (T.pack callsign')
     (Coordinates lat' lon')
     altitude'
     (readTime defaultTimeLocale "%H%M%S" time')
-    (Celsius celsius)
     (mkCRCConfirmation (TelemetryCRC crc16T) crc16C)
 
 eitherToNum :: (Num b, Integral a) => Either a b -> b

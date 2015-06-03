@@ -38,7 +38,7 @@ runMain opts@(FullOptions cli chartOpts) = do
   mapM_ (\x -> x opts telemetry) charts
   when (wiki chartOpts) $ putStrLn "</gallery>"
   where
-    charts = [altitudeChart, temperatureChart]
+    charts = [altitudeChart]
 
 -- | Reparse all data from the raw telemetry log, discarding any failed parses.
 readData :: ConfigFileOptions -> IO [IO TelemetryLine]
@@ -64,16 +64,16 @@ altitudeChart (FullOptions _ _) parses = do
       let datapoints = zip [1..] (map _altitude parses')
       return $ plot (line "meters" [datapoints])
 
-temperatureChart :: FullOptions -> IO [TelemetryLine] -> IO ()
-temperatureChart (FullOptions _ _) parses = do
-  p <- parses >>= plot'
-  putStrLn "File:Temperature.svg|Temperature data (°C)"
-  toFile def "charts/temperature.svg" $ do
-    layout_title .= "Temperature"
-    p
-  where
-    cExtract (Celsius c) = c
-    plot' :: [TelemetryLine] -> IO (EC (Layout Int Double) ())
-    plot' parses' = do
-      let datapoints = zip [1..] (map (cExtract . _temperature) parses')
-      return $ plot (line "°C" [datapoints])
+--temperatureChart :: FullOptions -> IO [TelemetryLine] -> IO ()
+--temperatureChart (FullOptions _ _) parses = do
+--  p <- parses >>= plot'
+--  putStrLn "File:Temperature.svg|Temperature data (°C)"
+--  toFile def "charts/temperature.svg" $ do
+--    layout_title .= "Temperature"
+--    p
+--  where
+--    cExtract (Celsius c) = c
+--    plot' :: [TelemetryLine] -> IO (EC (Layout Int Double) ())
+--    plot' parses' = do
+--      let datapoints = zip [1..] (map (cExtract . _temperature) parses')
+--      return $ plot (line "°C" [datapoints])

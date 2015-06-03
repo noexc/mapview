@@ -49,7 +49,6 @@ data TelemetryLine = TelemetryLine {
   , _coordinates :: Coordinates
   , _altitude    :: Meters
   , _time        :: UTCTime
-  , _temperature :: Celsius
   , _crc         :: CRCConfirmation
   } deriving (Eq, Show)
 makeLenses ''TelemetryLine
@@ -90,12 +89,11 @@ instance A.FromJSON Coordinates where
   parseJSON _            = mzero
 
 instance A.ToJSON TelemetryLine where
-  toJSON (TelemetryLine _ coord alt t (Celsius c) crc') =
+  toJSON (TelemetryLine _ coord alt t crc') =
     A.object
     [ "coordinates"    A..= coord
     , "altitude"       A..= alt
     , "time"           A..= t
-    , "temperature"    A..= c
     , "crc"            A..= crc'
     ]
 
