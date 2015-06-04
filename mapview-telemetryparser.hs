@@ -52,7 +52,7 @@ writeJson p h = do
           currentDay <- liftIO getCurrentTime
           telemetryLine' <- liftIO telemetryLine''
           let telemetryLine = time . _utctDay .~ currentDay ^. _utctDay $ telemetryLine'
-          liftIO $ putStrLn $ "...which parsed into: " ++ show telemetryLine
+          liftIO $ putStrLn $ "...which parsed into:\n" ++ show telemetryLine
           liftIO $ writeFile (workingPath p) (C8L.unpack $ A.encode telemetryLine)
           liftIO $
             when (telemetryLine ^. crc . to isCRCMatch) $

@@ -59,11 +59,11 @@ makeLenses ''TelemetryLine
 
 instance Show TelemetryLine where
   show (TelemetryLine call (Coordinates lat' lon') alt tm crc') =
-    "Call:\t" ++ T.unpack call ++ "\n" ++
+    "Call:\t\n" ++ T.unpack call ++ "\n" ++
     "lat/lon:\t" ++ show lat' ++ ", " ++ show lon' ++ "\n" ++
-    "alt:\t" ++ show alt ++ "m\n" ++
-    "time:\t" ++ show tm ++ "\n" ++
-    "crc:\t" ++ show crc'
+    "alt:\t\n" ++ show alt ++ "m\n" ++
+    "time:\t\n" ++ show tm ++ "\n" ++
+    "crc:\t\t" ++ show crc'
 
 -- TODO: lens-aeson?
 instance A.ToJSON Coordinates where
