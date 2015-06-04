@@ -59,7 +59,7 @@ makeLenses ''TelemetryLine
 
 instance Show TelemetryLine where
   show (TelemetryLine call (Coordinates lat' lon') alt tm crc') =
-    "Call:\t\t" ++ T.unpack call ++ "\n" ++
+    "call:\t\t" ++ T.unpack call ++ "\n" ++
     "lat/lon:\t" ++ show lat' ++ ", " ++ show lon' ++ "\n" ++
     "alt:\t\t" ++ show alt ++ "m\n" ++
     "time:\t\t" ++ show tm ++ "\n" ++
