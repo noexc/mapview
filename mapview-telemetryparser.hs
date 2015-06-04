@@ -44,17 +44,21 @@ writeJson p h = do
   liftIO $ hSetBuffering h NoBuffering
   line' <- liftIO $ hGetLine h
   unless (null line') $ do
-      liftIO $ putStrLn $ "RECEIVED LINE: " ++ line'
-      liftIO $ appendFile (rawLogPath p) (line' ++ "\n")
+      liftIO $ do
+        putStrLn $ "RECEIVED LINE: " ++ line'
+        appendFile (rawLogPath p) (line' ++ "\n")
       case parseString parseLine mempty line' of
         Failure _ -> return ()
         Success telemetryLine'' -> do
           currentDay <- liftIO getCurrentTime
           telemetryLine' <- liftIO telemetryLine''
           let telemetryLine = time . _utctDay .~ currentDay ^. _utctDay $ telemetryLine'
-          liftIO $ putStrLn $ "...which parsed into:\n" ++ show telemetryLine
-          liftIO $ writeFile (workingPath p) (C8L.unpack $ A.encode telemetryLine)
-          liftIO $
+          liftIO $ do
+            putStrLn "...which parsed into:"
+            putStrLn $ "------------------------------------------------"
+            print telemetryLine
+            putStrLn $ "------------------------------------------------"
+            writeFile (workingPath p) (C8L.unpack $ A.encode telemetryLine)
             when (telemetryLine ^. crc . to isCRCMatch) $
               recordCoordinates p (telemetryLine ^. coordinates)
   writeJson p h
