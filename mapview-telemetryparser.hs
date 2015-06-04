@@ -14,7 +14,6 @@ import GHC.IO.Handle
 import Options.Applicative hiding (Failure, Parser, Success)
 import Shelly hiding (time)
 import qualified System.IO.Strict as S
-import Text.PrettyPrint.ANSI.Leijen (putDoc)
 import Text.Trifecta
 
 import KD8ZRC.Mapview.Parser
@@ -48,7 +47,7 @@ writeJson p h = do
       liftIO $ putStrLn $ "RECEIVED LINE: " ++ line'
       liftIO $ appendFile (rawLogPath p) (line' ++ "\n")
       case parseString parseLine mempty line' of
-        Failure e -> liftIO $ putDoc e
+        Failure _ -> return ()
         Success telemetryLine'' -> do
           currentDay <- liftIO getCurrentTime
           telemetryLine' <- liftIO telemetryLine''
