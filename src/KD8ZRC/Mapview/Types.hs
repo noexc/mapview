@@ -44,6 +44,10 @@ mkCRCConfirmation t@(TelemetryCRC t') c@(CalculatedCRC c') =
   then CRCMatch t'
   else CRCMismatch t c
 
+isCRCMatch :: CRCConfirmation -> Bool
+isCRCMatch (CRCMatch _) = True
+isCRCMatch _ = False
+
 data TelemetryLine = TelemetryLine {
     _callsign    :: T.Text
   , _coordinates :: Coordinates

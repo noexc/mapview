@@ -55,5 +55,7 @@ writeJson p h = do
           let telemetryLine = time . _utctDay .~ currentDay ^. _utctDay $ telemetryLine'
           liftIO $ putStrLn $ "...which parsed into: " ++ show telemetryLine
           liftIO $ writeFile (workingPath p) (C8L.unpack $ A.encode telemetryLine)
-          liftIO $ recordCoordinates p (telemetryLine ^. coordinates)
+          liftIO $
+            when (telemetryLine ^. crc . to isCRCMatch) $
+              recordCoordinates p (telemetryLine ^. coordinates)
   writeJson p h
