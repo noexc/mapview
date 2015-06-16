@@ -1,24 +1,20 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
-module KD8ZRC.Mapview.Parser where
+module Main where
 
+import Control.Applicative
 import Control.Lens
-import Control.Monad (mzero)
-import qualified Data.Aeson as A
 import qualified Data.ByteString as BR
 import qualified Data.ByteString.Char8 as BRC
 import Data.Char (digitToInt)
 import Data.Digest.CRC16
-import Data.List (dropWhileEnd)
-import Data.List (foldl')
+import Data.List (dropWhileEnd, foldl')
 import qualified Data.Text as T
 import Data.Thyme.Clock
 import Data.Thyme.Format
-import Data.Thyme.Format.Aeson ()
 import Data.Word
-import Options.Applicative
-import System.Locale
+import KD8ZRC.Mapview.Types
 import Text.Trifecta
+import System.Locale
 
 type Latitude  = Double
 type Longitude = Double
@@ -63,68 +59,9 @@ data TelemetryLine = TelemetryLine {
   } deriving (Eq)
 makeLenses ''TelemetryLine
 
-instance Show TelemetryLine where
-  show (TelemetryLine call (Coordinates lat' lon') alt tm crc') =
-    "call:\t\t" ++ T.unpack call ++ "\n" ++
-    "lat/lon:\t" ++ show lat' ++ ", " ++ show lon' ++ "\n" ++
-    "alt:\t\t" ++ show alt ++ "m\n" ++
-    "time:\t\t" ++ show tm ++ "\n" ++
-    "crc:\t\t" ++ show crc'
-
--- TODO: lens-aeson?
-instance A.ToJSON Coordinates where
-  toJSON (Coordinates lat lon) =
-    A.object
-    [ "lat" A..= lat
-    , "lon" A..= lon
-    ]
-
-instance A.ToJSON LookangleCoordinates where
-  toJSON (LookangleCoordinates (Coordinates lat lon) alt) =
-    A.object
-    [ "lat" A..= lat
-    , "lon" A..= lon
-    , "alt" A..= alt
-    ]
-
-instance A.ToJSON CRCConfirmation where
-  toJSON (CRCMatch n) =
-    A.object
-    [ "match" A..= True
-    , "crc"   A..= n
-    ]
-  toJSON (CRCMismatch (TelemetryCRC tc) (CalculatedCRC cc)) =
-    A.object
-    [ "match"    A..= False
-    , "received" A..= tc
-    , "expected" A..= cc
-    ]
-
-instance A.FromJSON Coordinates where
-  parseJSON (A.Object v) = Coordinates <$>
-                             v A..: "lat"
-                         <*> v A..: "lon"
-  parseJSON _            = mzero
-
-instance A.ToJSON TelemetryLine where
-  toJSON (TelemetryLine _ coord alt t crc') =
-    A.object
-    [ "coordinates"    A..= coord
-    , "altitude"       A..= alt
-    , "time"           A..= t
-    , "crc"            A..= crc'
-    ]
-
-
-
-number :: TokenParsing m => Integer -> m Char -> m Integer
-number base baseDigit =
-  foldl' (\x d -> base * x + toInteger (digitToInt d)) 0 <$> some baseDigit
-
 crcHaskellF :: Word16 -> Bool -> Word16 -> [Word8] -> Word16
 crcHaskellF poly inverse initial = BR.foldl (crc16Update poly inverse) initial . BR.pack
 
--- TODO: Config-file polynomial and initial.
 crcHaskell :: String -> CalculatedCRC
 crcHaskell s =
   CalculatedCRC . fromIntegral $ crcHaskellF
@@ -133,37 +70,39 @@ crcHaskell s =
     0xffff
     [fromIntegral (fromEnum x) :: Word8 | x <- s]
 
--- | Input is in the following format:
---
--- >>> :W8UPD:41.09347:-80.74683:237.0:032553:656:-40:83:
-parseLine :: (Monad m, DeltaParsing m, TokenParsing m) => m (IO TelemetryLine)
-parseLine = do
+
+parser :: (Monad m, DeltaParsing m) => m TelemetryLine
+parser = do
   _ <- colon
   callsign' <- manyTill anyChar (try colon)
-
   lat' <- eitherToNum <$> integerOrDouble
   _ <- colon
-
   lon' <- eitherToNum <$> integerOrDouble
   _ <- colon
-
   altitude' <- eitherToNum <$> integerOrDouble
   _ <- colon
-
   time' <- many (token digit)
   _ <- colon
-
   crc16T <- number 16 hexDigit
   _ <- colon
-
   crc16C <- crcHaskell . dropWhileEnd (/= ':') . init . tail . BRC.unpack <$> line
-
-  return $ return $ TelemetryLine
+  return $ TelemetryLine
     (T.pack callsign')
     (Coordinates lat' lon')
     altitude'
     (readTime defaultTimeLocale "%H%M%S" time')
     (mkCRCConfirmation (TelemetryCRC crc16T) crc16C)
+  where
+    number base baseDigit =
+      foldl' (\x d -> base * x + toInteger (digitToInt d)) 0 <$> some baseDigit
 
 eitherToNum :: (Num b, Integral a) => Either a b -> b
 eitherToNum = either fromIntegral id
+
+mvConfig :: MapviewConfig TelemetryLine
+mvConfig = MapviewConfig {
+    mvParser = parser
+}
+
+main :: IO ()
+main = error ""

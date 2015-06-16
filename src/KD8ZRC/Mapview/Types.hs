@@ -1,113 +1,51 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
+-----------------------------------------------------------------------------
+-- |
+-- Module : KD8ZRC.Mapview.Types
+-- Copyright : (C) 2015 Ricky Elrod
+-- License : MIT (see LICENSE file)
+-- Maintainer : Ricky Elrod <ricky@elrod.me>
+-- Stability : experimental
+-- Portability : ghc (lens)
+--
+-- Provides fundamental types intrinsic to the rest of the mapview library.
+-- This shouldn't contain types specific to any particular use of the library
+-- (suggested types can be found in the KD8ZRC.Mapview.Utility.* set of
+-- modules).
+----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Types where
 
 import Control.Lens
-import Control.Monad (mzero)
-import qualified Data.Aeson as A
+import Control.Monad.Trans.Reader
 import qualified Data.Configurator as Cfg
 import qualified Data.Configurator.Types as Cfg
 import Data.List (dropWhileEnd)
-import qualified Data.Text as T
-import Data.Thyme.Clock
 import Data.Thyme.Format.Aeson ()
 import Options.Applicative
 import System.Directory (createDirectoryIfMissing)
+import qualified Text.Trifecta as Tr
 
-type Latitude  = Double
-type Longitude = Double
-type Meters    = Double
+-- | The 'MV' type is a monad transformer which carries around our
+-- 'MapviewConfig', making it accessible to all callback hooks.
+type MV t a = ReaderT (MapviewConfig t) IO a
 
-data Coordinates = Coordinates {
-    _latitude  :: Latitude
-  , _longitude :: Longitude
-  } deriving (Eq, Show)
-makeLenses ''Coordinates
+-- | The configuration for this instance of Mapview. The @t@ parameter is the
+-- type that the telemetry parser parses into, if it is successfully able to
+-- parse the data.
+data MapviewConfig t =
+  MapviewConfig { mvParser :: (Monad m, Tr.DeltaParsing m) => m t }
+makeFields ''MapviewConfig
 
-data CoordinatesList = CoordinatesList {
-    coordinatesList :: [Coordinates]
-    } deriving (Eq, Show)
 
-data LookangleCoordinates =
-  LookangleCoordinates Coordinates Meters deriving (Eq, Show)
 
-newtype Celsius = Celsius { _degrees :: Double } deriving (Eq, Show)
-makeLenses ''Celsius
 
-newtype TelemetryCRC = TelemetryCRC Integer deriving (Eq, Show)
-newtype CalculatedCRC = CalculatedCRC Integer deriving (Eq, Show)
-data CRCConfirmation = CRCMatch Integer | CRCMismatch TelemetryCRC CalculatedCRC deriving (Eq, Show)
 
-mkCRCConfirmation :: TelemetryCRC -> CalculatedCRC -> CRCConfirmation
-mkCRCConfirmation t@(TelemetryCRC t') c@(CalculatedCRC c') =
-  if t' == c'
-  then CRCMatch t'
-  else CRCMismatch t c
 
-isCRCMatch :: CRCConfirmation -> Bool
-isCRCMatch (CRCMatch _) = True
-isCRCMatch _ = False
 
-data TelemetryLine = TelemetryLine {
-    _callsign    :: T.Text
-  , _coordinates :: Coordinates
-  , _altitude    :: Meters
-  , _time        :: UTCTime
-  , _crc         :: CRCConfirmation
-  } deriving (Eq)
-makeLenses ''TelemetryLine
-
-instance Show TelemetryLine where
-  show (TelemetryLine call (Coordinates lat' lon') alt tm crc') =
-    "call:\t\t" ++ T.unpack call ++ "\n" ++
-    "lat/lon:\t" ++ show lat' ++ ", " ++ show lon' ++ "\n" ++
-    "alt:\t\t" ++ show alt ++ "m\n" ++
-    "time:\t\t" ++ show tm ++ "\n" ++
-    "crc:\t\t" ++ show crc'
-
--- TODO: lens-aeson?
-instance A.ToJSON Coordinates where
-  toJSON (Coordinates lat lon) =
-    A.object
-    [ "lat" A..= lat
-    , "lon" A..= lon
-    ]
-
-instance A.ToJSON LookangleCoordinates where
-  toJSON (LookangleCoordinates (Coordinates lat lon) alt) =
-    A.object
-    [ "lat" A..= lat
-    , "lon" A..= lon
-    , "alt" A..= alt
-    ]
-
-instance A.ToJSON CRCConfirmation where
-  toJSON (CRCMatch n) =
-    A.object
-    [ "match" A..= True
-    , "crc"   A..= n
-    ]
-  toJSON (CRCMismatch (TelemetryCRC tc) (CalculatedCRC cc)) =
-    A.object
-    [ "match"    A..= False
-    , "received" A..= tc
-    , "expected" A..= cc
-    ]
-
-instance A.FromJSON Coordinates where
-  parseJSON (A.Object v) = Coordinates <$>
-                             v A..: "lat"
-                         <*> v A..: "lon"
-  parseJSON _            = mzero
-
-instance A.ToJSON TelemetryLine where
-  toJSON (TelemetryLine _ coord alt t crc') =
-    A.object
-    [ "coordinates"    A..= coord
-    , "altitude"       A..= alt
-    , "time"           A..= t
-    , "crc"            A..= crc'
-    ]
+-- Old stuff, kept here to keep the build working - will gradually be nuked as
+-- the v3 rework takes place. See #20.
 
 data ConfigFileOptions =
   ConfigFileOptions { historyPath     :: String
