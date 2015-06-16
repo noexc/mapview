@@ -35,7 +35,7 @@ type MV t a = ReaderT (MapviewConfig t) IO a
 -- type that the telemetry parser parses into, if it is successfully able to
 -- parse the data.
 data MapviewConfig t =
-  MapviewConfig { mvParser :: (Monad m, Tr.DeltaParsing m) => m t }
+  MapviewConfig { mvParser :: forall m. (Monad m, Tr.DeltaParsing m) => m t }
 makeFields ''MapviewConfig
 
 
