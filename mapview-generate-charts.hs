@@ -3,12 +3,13 @@ module Main where
 import Control.Applicative
 import Control.Lens
 import Control.Monad
-import Data.Monoid (mempty)
+import Data.Monoid
 import Graphics.Rendering.Chart.Easy
 import Graphics.Rendering.Chart.Backend.Diagrams
 import Options.Applicative hiding (Failure, Parser, Success)
 import qualified Options.Applicative (Parser)
 import Text.Trifecta hiding (line)
+import Prelude
 
 import KD8ZRC.Mapview.Parser
 import KD8ZRC.Mapview.Types

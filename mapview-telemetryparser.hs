@@ -7,7 +7,7 @@ import Control.Lens
 import qualified Data.Aeson as A
 import qualified Data.ByteString.Lazy.Char8 as C8L
 import Data.Maybe (fromMaybe)
-import Data.Monoid (mempty)
+import Data.Monoid
 import qualified Data.Text as T
 import Data.Thyme.Clock
 import GHC.IO.Handle
@@ -15,6 +15,7 @@ import Options.Applicative hiding (Failure, Parser, Success)
 import Shelly hiding (time)
 import qualified System.IO.Strict as S
 import Text.Trifecta
+import Prelude
 
 import KD8ZRC.Mapview.Parser
 import KD8ZRC.Mapview.Types
