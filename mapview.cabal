@@ -1,12 +1,12 @@
 name:                mapview
-version:             2.0.2
+version:             3
 synopsis:            View coordinates received via telemetry on a map in realtime.
 homepage:            https://github.com/noexc/mapview
 license:             MIT
 license-file:        LICENSE
 author:              Ricky Elrod
 maintainer:          ricky@elrod.me
-copyright:           (c) 2014 Ricky Elrod <ricky@elrod.me>
+copyright:           (c) 2015 Ricky Elrod <ricky@elrod.me>
 category:            KD8ZRC
 build-type:          Simple
 -- extra-source-files:
