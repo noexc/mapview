@@ -1,3 +1,4 @@
+{-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -18,7 +19,9 @@
 module KD8ZRC.Mapview.Types where
 
 import Control.Lens
+--import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
+--import qualified Data.ByteString.Lazy.Char8 as LB
 import qualified Data.Configurator as Cfg
 import qualified Data.Configurator.Types as Cfg
 import Data.List (dropWhileEnd)
@@ -31,13 +34,25 @@ import qualified Text.Trifecta as Tr
 -- 'MapviewConfig', making it accessible to all callback hooks.
 type MV t a = ReaderT (MapviewConfig t) IO a
 
+-- | The type for callbacks which occur immediately after a packet is received,
+-- before even parsing occurs.
+newtype PacketLineCallback t =
+  PacketLineCallback { getPacketLineCallback :: String -> MV t () }
+
 -- | The configuration for this instance of Mapview. The @t@ parameter is the
 -- type that the telemetry parser parses into, if it is successfully able to
 -- parse the data.
 data MapviewConfig t =
-  MapviewConfig { mvParser :: forall m. (Monad m, Tr.DeltaParsing m) => m t }
-makeFields ''MapviewConfig
-
+  MapviewConfig { _mvParser :: forall m. (Monad m, Tr.DeltaParsing m) => m t
+                  -- ^ Determines how a packet is parsed.
+                , _mvPacketLineCallback :: [PacketLineCallback t]
+                  -- ^ Determines what to do immediately after a packet is
+                  -- received, before it is parsed.
+                , _mvDownlinkSpawn :: MV t ()
+                  -- ^ As soon as Mapview is launched, this callback is run and
+                  -- should begin the process of listening for telemetry data.
+                }
+makeLenses ''MapviewConfig
 
 
 

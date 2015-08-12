@@ -1,8 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 module Main where
 
 import Control.Applicative
 import Control.Lens
+import Control.Monad.IO.Class
 import qualified Data.ByteString as BR
 import qualified Data.ByteString.Char8 as BRC
 import Data.Char (digitToInt)
@@ -13,6 +15,8 @@ import Data.Thyme.Clock
 import Data.Thyme.Format
 import Data.Word
 import KD8ZRC.Mapview.Types
+import KD8ZRC.Mapview.Utility.Downlink
+import KD8ZRC.Mapview.Utility.Logging
 import Text.Trifecta
 import System.Locale
 
@@ -101,7 +105,9 @@ eitherToNum = either fromIntegral id
 
 mvConfig :: MapviewConfig TelemetryLine
 mvConfig = MapviewConfig {
-    mvParser = parser
+    _mvParser = parser
+  , _mvDownlinkSpawn = modemStdout "minimodem" ["-r", "-q", "rtty", "-S", "700", "-M", "870"]
+  , _mvPacketLineCallback = [logRawPacketStdout]
 }
 
 main :: IO ()

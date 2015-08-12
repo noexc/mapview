@@ -15,6 +15,9 @@ cabal-version:       >=1.10
 library
   exposed-modules:     KD8ZRC.Mapview.Parser
                      , KD8ZRC.Mapview.Types
+                     , KD8ZRC.Mapview.Utility.Coordinates
+                     , KD8ZRC.Mapview.Utility.Downlink
+                     , KD8ZRC.Mapview.Utility.Logging
   build-depends:
       aeson >= 0.7
     , base > 4 && < 5
@@ -27,6 +30,7 @@ library
     , linear >= 1.10 && < 2
     , old-locale >= 1.0
     , optparse-applicative >= 0.9
+    , shelly >= 1.5
     , text >= 1.1
     , thyme >= 0.3.5 && < 0.4
     , transformers >= 0.3 && < 0.5
