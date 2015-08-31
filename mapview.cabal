@@ -13,8 +13,7 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     KD8ZRC.Mapview.Parser
-                     , KD8ZRC.Mapview.Types
+  exposed-modules:     KD8ZRC.Mapview.Types
                      , KD8ZRC.Mapview.Utility.Coordinates
                      , KD8ZRC.Mapview.Utility.Downlink
                      , KD8ZRC.Mapview.Utility.Logging

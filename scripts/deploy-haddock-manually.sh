@@ -8,8 +8,9 @@ cabal haddock
 pushd "$f/mapview.git"
   git checkout gh-pages && git rm -rf *
   mkdir haddock
+  mkdir v3-haddock
 popd
-mv dist/doc/html/mapview/* "$f/mapview.git/haddock"
+mv dist/doc/html/mapview/* "$f/mapview.git/v3-haddock"
 pushd "$f/mapview.git"
   git checkout master -- doc
   pushd doc
