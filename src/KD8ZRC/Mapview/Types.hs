@@ -35,7 +35,7 @@ newtype PacketLineCallback t =
 -- type that the telemetry parser parses into, if it is successfully able to
 -- parse the data.
 data MapviewConfig t =
-  MapviewConfig { _mvParser :: forall m. (Monad m, Tr.DeltaParsing m) => m t
+  MapviewConfig { _mvParser :: forall m. (Monad m, Tr.DeltaParsing m, Tr.Errable m) => m t
                   -- ^ Determines how a packet is parsed.
                 , _mvPacketLineCallback :: [PacketLineCallback t]
                   -- ^ Determines what to do immediately after a packet is
