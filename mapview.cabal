@@ -12,13 +12,15 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     KD8ZRC.Mapview.Types
+  exposed-modules:     KD8ZRC.Mapview.Execute
+                     , KD8ZRC.Mapview.Types
                      , KD8ZRC.Mapview.Utility.Coordinates
                      , KD8ZRC.Mapview.Utility.CRC
                      , KD8ZRC.Mapview.Utility.Downlink
                      , KD8ZRC.Mapview.Utility.Logging
   build-depends:
       aeson >= 0.7
+    , ansi-terminal >= 0.5 && < 0.7
     , base > 4 && < 5
     , bytestring >= 0.10
     , configurator >= 0.3

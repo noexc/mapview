@@ -19,6 +19,7 @@ module KD8ZRC.Mapview.Utility.Logging where
 
 import Control.Monad.IO.Class
 import KD8ZRC.Mapview.Types
+import System.Console.ANSI
 
 logStdout :: String -> PacketLineCallback t
 logStdout token =
@@ -26,4 +27,8 @@ logStdout token =
 
 -- | Log a raw packet to standard output.
 logRawPacketStdout :: PacketLineCallback t
-logRawPacketStdout = logStdout "RX-RAW"
+logRawPacketStdout =
+  logStdout $
+    setSGRCode ([Reset, SetColor Foreground Vivid Yellow]) ++
+    "RX-RAW" ++
+    setSGRCode [Reset]
