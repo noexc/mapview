@@ -51,3 +51,4 @@ modemStdout exe args = do
       liftIO $ hSetBuffering h NoBuffering
       line' <- liftIO $ hGetLine h
       unless (null line') (liftIO $ runReaderT (packetCallbackCaller line') c)
+      hndl c h
