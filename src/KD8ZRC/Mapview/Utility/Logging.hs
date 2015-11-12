@@ -26,4 +26,4 @@ logStdout token s =
 
 -- | Log a raw packet to standard output.
 logRawPacketStdout :: String -> MV t ()
-logRawPacketStdout pkt = logStdout "RX-RAW" pkt
+logRawPacketStdout = logStdout "RX-RAW"

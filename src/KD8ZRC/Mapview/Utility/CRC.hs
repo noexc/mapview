@@ -14,7 +14,6 @@
 module KD8ZRC.Mapview.Utility.CRC where
 
 import Control.Lens
---import KD8ZRC.Mapview.Types
 
 -- | The CRC code that we received in the telemetry message from the downlink.
 newtype TelemetryCRC a = TelemetryCRC a deriving (Eq, Show)
