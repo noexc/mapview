@@ -18,6 +18,7 @@
 module KD8ZRC.Mapview.Utility.Logging where
 
 import Control.Monad.IO.Class
+import Data.Thyme
 import KD8ZRC.Mapview.Types
 import System.Console.ANSI
 
@@ -32,3 +33,14 @@ logRawPacketStdout =
     setSGRCode ([Reset, SetColor Foreground Vivid Yellow]) ++
     "RX-RAW" ++
     setSGRCode [Reset]
+
+-- | Log a raw packet to a file.
+logRawPacketFile ::
+  String -- ^ The filename to log to.
+  -> PacketLineCallback t
+logRawPacketFile file =
+  PacketLineCallback (\s -> liftIO (formatLine s >>= appendFile file))
+  where
+    formatLine s = do
+      current <- getCurrentTime
+      return $ "[" ++ show current ++ "] " ++ s ++ "\n"

@@ -33,6 +33,7 @@ library
     , optparse-applicative >= 0.9
     , shelly >= 1.5
     , text >= 1.1
+    , time >= 1 && < 2
     , thyme >= 0.3.5 && < 0.4
     , transformers >= 0.3 && < 0.5
     , trifecta >= 1.4.3 && < 2
