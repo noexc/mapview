@@ -19,15 +19,7 @@
 module KD8ZRC.Mapview.Types where
 
 import Control.Lens
---import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
---import qualified Data.ByteString.Lazy.Char8 as LB
-import qualified Data.Configurator as Cfg
-import qualified Data.Configurator.Types as Cfg
-import Data.List (dropWhileEnd)
-import Data.Thyme.Format.Aeson ()
-import Options.Applicative
-import System.Directory (createDirectoryIfMissing)
 import qualified Text.Trifecta as Tr
 
 -- | The 'MV' type is a monad transformer which carries around our
@@ -53,65 +45,3 @@ data MapviewConfig t =
                   -- should begin the process of listening for telemetry data.
                 }
 makeLenses ''MapviewConfig
-
-
-
-
-
-
--- Old stuff, kept here to keep the build working - will gradually be nuked as
--- the v3 rework takes place. See #20.
-
-data ConfigFileOptions =
-  ConfigFileOptions { historyPath     :: String
-                    , rawLogPath      :: String
-                    , workingPath     :: String
-                    , modem           :: String
-                    , modemFlags      :: [String]
-                    , gpsdCoordinates :: String
-                    } deriving (Eq, Show)
-makeLenses ''ConfigFileOptions
-
-newtype CLIOptions =
-  CLIOptions String deriving (Eq, Show)
-makeLenses ''CLIOptions
-
-parseOptions :: Parser CLIOptions
-parseOptions =
-  CLIOptions <$> strOption (long "conf"
-                            <> short 'c'
-                            <> metavar "CONFIG_FILE"
-                            <> value "mapview.conf")
-
--- | Parse config values into a common structure ('ConfigFileOptions') and
--- return it after creating any necessary directories.
-runConfig :: CLIOptions -> IO (Cfg.Config, ConfigFileOptions)
-runConfig (CLIOptions configFile') = do
-  config <- Cfg.load [Cfg.Required configFile']
-  historyPath' <- Cfg.require config "telemetry.coordinates-history"
-  createDirectoryIfMissing True (baseDir historyPath')
-
-  rawLogPath' <- Cfg.require config "telemetry.raw-log"
-  createDirectoryIfMissing True (baseDir rawLogPath')
-
-  workingPath' <- Cfg.require config "telemetry.working-coordinates"
-  createDirectoryIfMissing True (baseDir workingPath')
-
-  modemCommand <- Cfg.lookupDefault "minimodem" config "telemetry.modem-command"
-  flags <- Cfg.lookupDefault ["-r", "-q", "rtty"] config "telemetry.modem-flags"
-
-  gpsdPath' <- Cfg.require config "gpsd.coordinates"
-  createDirectoryIfMissing True (baseDir gpsdPath')
-
-  let opts = ConfigFileOptions
-             historyPath'
-             rawLogPath'
-             workingPath'
-             modemCommand
-             flags
-             gpsdPath'
-
-  return (config, opts)
-
-  where
-    baseDir = init . dropWhileEnd (/= '/')
