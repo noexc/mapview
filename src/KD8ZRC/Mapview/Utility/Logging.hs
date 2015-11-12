@@ -20,10 +20,10 @@ module KD8ZRC.Mapview.Utility.Logging where
 import Control.Monad.IO.Class
 import KD8ZRC.Mapview.Types
 
-logStdout :: String -> String -> MV t ()
-logStdout token s =
-  liftIO . putStrLn $ "[" ++ token ++ "] " ++ s
+logStdout :: String -> PacketLineCallback t
+logStdout token =
+  PacketLineCallback (\s -> liftIO . putStrLn $ "[" ++ token ++ "] " ++ s)
 
 -- | Log a raw packet to standard output.
-logRawPacketStdout :: String -> MV t ()
+logRawPacketStdout :: PacketLineCallback t
 logRawPacketStdout = logStdout "RX-RAW"
