@@ -20,6 +20,7 @@ module KD8ZRC.Mapview.Types where
 
 import Control.Lens
 import Control.Monad.Trans.Reader
+import Text.PrettyPrint.ANSI.Leijen
 import qualified Text.Trifecta as Tr
 
 -- | The 'MV' type is a monad transformer which carries around our
@@ -30,6 +31,11 @@ type MV t a = ReaderT (MapviewConfig t) IO a
 -- before even parsing occurs.
 newtype PacketLineCallback t =
   PacketLineCallback { getPacketLineCallback :: String -> MV t () }
+
+-- | The type for callbacks which occur immediately after a packet is parsed.
+data ParsedPacketCallback t =
+    ParseSuccessCallback { getParseSuccessCallback :: t -> MV t () }
+  | ParseFailureCallback { getParseFailureCallback :: Doc -> MV t () }
 
 -- | The configuration for this instance of Mapview. The @t@ parameter is the
 -- type that the telemetry parser parses into, if it is successfully able to
@@ -43,5 +49,6 @@ data MapviewConfig t =
                 , _mvDownlinkSpawn :: MV t ()
                   -- ^ As soon as Mapview is launched, this callback is run and
                   -- should begin the process of listening for telemetry data.
+                , _mvParsedPacketCallback :: [ParsedPacketCallback t]
                 }
 makeLenses ''MapviewConfig

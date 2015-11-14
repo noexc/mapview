@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module : KD8ZRC.Mapview.Utility.Downlink
@@ -26,14 +25,33 @@ import Control.Monad.Trans.Reader
 import qualified Data.Text as T
 import GHC.IO.Handle
 import KD8ZRC.Mapview.Types
+import Text.Trifecta
 import Shelly hiding (time)
 
 -- | Fires off the callbacks in our 'MapviewConfig''s 'mvPacketLineCallback'
 -- field. For now, you probably want to make sure to call this from your
 -- downlink-obtaining function, on each line.
 packetCallbackCaller :: String -> MV t ()
-packetCallbackCaller pkt =
+packetCallbackCaller pkt = do
   sequenceOf_ (mvPacketLineCallback . traverse . to (flip getPacketLineCallback pkt)) =<< ask
+  parsedPacketCallbackCaller pkt
+
+-- | Fires off the callbacks in our 'MapviewConfig''s 'mvParsedPacketCallback'
+-- field. For now, you probably want to make sure to call this from your
+-- downlink-obtaining function, on each line. This should be fixed at some
+-- point, because it forces us to give up a separation of concerns, which is
+-- annoying. I'm not yet sure of the correct abstraction, however.
+parsedPacketCallbackCaller :: String -> MV t ()
+parsedPacketCallbackCaller pkt = do
+  config <- ask
+  let parsed = parseString (config ^. mvParser) mempty pkt
+  mapM_ (\c -> caller c parsed) (_mvParsedPacketCallback config)
+  where
+    caller :: ParsedPacketCallback t -> Result t -> MV t ()
+    caller (ParseSuccessCallback c) (Success t) = c t
+    caller (ParseFailureCallback c) (Failure a) = c a
+    caller _ _ = return ()
+
 
 -- | This callback provides a way to obtain downlink data by shelling out to an
 -- audio modem implementation, such as @minimodem@ or @fldigi@, and using each

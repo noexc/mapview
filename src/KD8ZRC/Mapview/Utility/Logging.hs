@@ -21,18 +21,25 @@ import Control.Monad.IO.Class
 import Data.Thyme
 import KD8ZRC.Mapview.Types
 import System.Console.ANSI
+import Text.PrettyPrint.ANSI.Leijen
 
-logStdout :: String -> PacketLineCallback t
-logStdout token =
-  PacketLineCallback (\s -> liftIO . putStrLn $ "[" ++ token ++ "] " ++ s)
+-- | Log a token and string to standard-output.
+logStdout :: MonadIO m => String -> String -> m ()
+logStdout token s =
+  liftIO . putStrLn $ "[" ++ token ++ "] " ++ s
+
+--------------------------------------------------------------------------------
+-- Raw Packet Callbacks
+--------------------------------------------------------------------------------
 
 -- | Log a raw packet to standard output.
 logRawPacketStdout :: PacketLineCallback t
 logRawPacketStdout =
-  logStdout $
-    setSGRCode ([Reset, SetColor Foreground Vivid Yellow]) ++
-    "RX-RAW" ++
-    setSGRCode [Reset]
+  PacketLineCallback (
+    logStdout
+      (setSGRCode ([Reset, SetColor Foreground Vivid Yellow]) ++
+       "RX-RAW" ++
+       setSGRCode [Reset]))
 
 -- | Log a raw packet to a file.
 logRawPacketFile ::
@@ -44,3 +51,28 @@ logRawPacketFile file =
     formatLine s = do
       current <- getCurrentTime
       return $ "[" ++ show current ++ "] " ++ s ++ "\n"
+
+--------------------------------------------------------------------------------
+-- Parsed Packet Callbacks
+--------------------------------------------------------------------------------
+
+logParsedPacketStdoutSuccess :: Show t => ParsedPacketCallback t
+logParsedPacketStdoutSuccess =
+  ParseSuccessCallback (\t ->
+    logStdout
+             (setSGRCode
+              [Reset, SetColor Foreground Vivid Green] ++
+              "PRS-OK" ++ setSGRCode [Reset]) (show t))
+
+logParsedPacketStdoutFailure :: ParsedPacketCallback t
+logParsedPacketStdoutFailure =
+  ParseFailureCallback $ \d -> do
+    logStdout (setSGRCode
+               [Reset, SetColor Foreground Vivid Red] ++
+               "PRS-FL" ++ setSGRCode [Reset]) ""
+    liftIO $ putDoc d >> putStrLn ""
+
+logParsedPacketStdout :: Show t => [ParsedPacketCallback t]
+logParsedPacketStdout = [ logParsedPacketStdoutSuccess
+                        , logParsedPacketStdoutFailure
+                        ]
