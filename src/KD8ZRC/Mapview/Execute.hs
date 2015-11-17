@@ -12,6 +12,7 @@
 ----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Execute where
 
+import Control.Concurrent
 import Control.Lens
 import Control.Monad.Trans.Reader
 import KD8ZRC.Mapview.Types
@@ -21,4 +22,6 @@ import KD8ZRC.Mapview.Types
 --
 -- TODO: Threading stuff -- where, when, how?
 mapview :: MapviewConfig t -> IO ()
-mapview config = runReaderT (config ^. mvDownlinkSpawn) config
+mapview config = do
+  mapM_ (forkIO . flip runReaderT config . getMapviewProcess) (config ^. mvForkProcesses)
+  runReaderT (config ^. mvDownlinkSpawn) config
