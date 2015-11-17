@@ -37,10 +37,6 @@ data ParsedPacketCallback t =
     ParseSuccessCallback { getParseSuccessCallback :: t -> MV t () }
   | ParseFailureCallback { getParseFailureCallback :: Doc -> MV t () }
 
--- | The type for processes we launch in a new thread when Mapview runs.
-newtype MapviewProcess t =
-  MapviewProcess { getMapviewProcess :: MV t () }
-
 -- | The configuration for this instance of Mapview. The @t@ parameter is the
 -- type that the telemetry parser parses into, if it is successfully able to
 -- parse the data.
@@ -51,14 +47,8 @@ data MapviewConfig t =
                   -- ^ Determines what to do immediately after a packet is
                   -- received, before it is parsed.
                 , _mvDownlinkSpawn :: MV t ()
-                  -- ^ As soon as Mapview is launched and '_mvForkProcesses'
-                  -- finishes forking its processes, this callback is run and
+                  -- ^ As soon as Mapview is launched, this callback is run and
                   -- should begin the process of listening for telemetry data.
                 , _mvParsedPacketCallback :: [ParsedPacketCallback t]
-                  -- ^ When we parse a packet, these callbacks get fired and
-                  -- passed the data.
-                , _mvForkProcesses :: [MapviewProcess t]
-                  -- ^ These are IO-using functions that get spawned in their
-                  -- own thread, right before '_mvDownlinkSpawn' runs.
                 }
 makeLenses ''MapviewConfig
