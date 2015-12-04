@@ -37,7 +37,7 @@ logRawPacketStdout :: PacketLineCallback t
 logRawPacketStdout =
   PacketLineCallback (
     logStdout
-      (setSGRCode ([Reset, SetColor Foreground Vivid Yellow]) ++
+      (setSGRCode [Reset, SetColor Foreground Vivid Yellow] ++
        "RX-RAW" ++
        setSGRCode [Reset]))
 
@@ -58,11 +58,11 @@ logRawPacketFile file =
 
 logParsedPacketStdoutSuccess :: Show t => ParsedPacketCallback t
 logParsedPacketStdoutSuccess =
-  ParseSuccessCallback (\t ->
+  ParseSuccessCallback (
     logStdout
              (setSGRCode
               [Reset, SetColor Foreground Vivid Green] ++
-              "PRS-OK" ++ setSGRCode [Reset]) (show t))
+              "PRS-OK" ++ setSGRCode [Reset]) . show)
 
 logParsedPacketStdoutFailure :: ParsedPacketCallback t
 logParsedPacketStdoutFailure =

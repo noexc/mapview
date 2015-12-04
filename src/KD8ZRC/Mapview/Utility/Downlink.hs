@@ -33,7 +33,7 @@ import Shelly hiding (time)
 -- downlink-obtaining function, on each line.
 packetCallbackCaller :: String -> MV t ()
 packetCallbackCaller pkt = do
-  sequenceOf_ (mvPacketLineCallback . traverse . to (flip getPacketLineCallback pkt)) =<< ask
+  sequenceOf_ (mvPacketLineCallback . traverse . to (`getPacketLineCallback` pkt)) =<< ask
   parsedPacketCallbackCaller pkt
 
 -- | Fires off the callbacks in our 'MapviewConfig''s 'mvParsedPacketCallback'
@@ -45,7 +45,7 @@ parsedPacketCallbackCaller :: String -> MV t ()
 parsedPacketCallbackCaller pkt = do
   config <- ask
   let parsed = parseString (config ^. mvParser) mempty pkt
-  mapM_ (\c -> caller c parsed) (_mvParsedPacketCallback config)
+  mapM_ (`caller` parsed) (_mvParsedPacketCallback config)
   where
     caller :: ParsedPacketCallback t -> Result t -> MV t ()
     caller (ParseSuccessCallback c) (Success t) = c t
