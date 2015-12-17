@@ -2,6 +2,11 @@
   <img src="https://raw.github.com/noexc/mapview/v3/marketing/logo.png" />
 </p>
 
+**NOTE:** This is a development branch of MapView and is a complete rewrite of
+anything yet-used in production. The `master` branch contains the old rendition
+of MapView, but works entirely differently. New development effort is being
+focused on this (`v3`) branch, however it is not yet production-ready.
+
 MapView is a **Haskell library** for building GPS-based tracking systems, based
 on telemetry downlinks (usually via RF, and typically done via amateur radio).
 
