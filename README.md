@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.github.com/noexc/mapview/master/marketing/logo.png" />
+  <img src="https://raw.github.com/noexc/mapview/v3/marketing/logo.png" />
 </p>
 
 MapView is a **Haskell library** for building GPS-based tracking systems, based
