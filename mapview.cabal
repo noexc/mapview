@@ -14,6 +14,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     KD8ZRC.Mapview.Execute
                      , KD8ZRC.Mapview.Types
+                     , KD8ZRC.Mapview.Utility.Concurrent
                      , KD8ZRC.Mapview.Utility.Coordinates
                      , KD8ZRC.Mapview.Utility.CRC
                      , KD8ZRC.Mapview.Utility.Downlink
