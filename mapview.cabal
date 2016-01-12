@@ -20,7 +20,7 @@ library
                      , KD8ZRC.Mapview.Utility.Downlink
                      , KD8ZRC.Mapview.Utility.Logging
   build-depends:
-      aeson >= 0.7
+      aeson >= 0.10
     , ansi-terminal >= 0.5 && < 0.7
     , ansi-wl-pprint >= 0.6 && < 0.7
     , base > 4 && < 5
