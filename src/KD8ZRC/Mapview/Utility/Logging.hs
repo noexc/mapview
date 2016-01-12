@@ -17,9 +17,9 @@
 ----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Utility.Logging where
 
+import Control.Monad.IO.Class
 import qualified Data.ByteString.Char8 as BS
 import Data.Monoid
-import Control.Monad.IO.Class
 import Data.Thyme
 import KD8ZRC.Mapview.Types
 import System.Console.ANSI

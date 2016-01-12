@@ -18,9 +18,9 @@
 ----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Types where
 
-import qualified Data.ByteString.Char8 as BS
 import Control.Lens
 import Control.Monad.Trans.Reader
+import qualified Data.ByteString.Char8 as BS
 import Text.PrettyPrint.ANSI.Leijen
 import qualified Text.Trifecta as Tr
 

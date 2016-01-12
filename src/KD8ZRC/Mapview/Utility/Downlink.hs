@@ -19,10 +19,10 @@
 ----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Utility.Downlink where
 
-import qualified Data.ByteString.Char8 as BS
 import Control.Lens
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
+import qualified Data.ByteString.Char8 as BS
 import qualified Data.Text as T
 import GHC.IO.Handle
 import KD8ZRC.Mapview.Types

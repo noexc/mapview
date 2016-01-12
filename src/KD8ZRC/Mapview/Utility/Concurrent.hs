@@ -12,9 +12,9 @@
 ----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Utility.Concurrent where
 
-import qualified Data.ByteString.Char8 as BS
 import qualified Control.Concurrent.Chan as Chan
 import Control.Monad.IO.Class
+import qualified Data.ByteString.Char8 as BS
 import KD8ZRC.Mapview.Types
 
 --------------------------------------------------------------------------------
