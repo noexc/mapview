@@ -12,15 +12,15 @@
 ----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Utility.Concurrent where
 
+import qualified Data.ByteString.Char8 as BS
 import qualified Control.Concurrent.Chan as Chan
 import Control.Monad.IO.Class
-import qualified Data.Text as T
 import KD8ZRC.Mapview.Types
 
 --------------------------------------------------------------------------------
 -- Raw Packet Callbacks
 --------------------------------------------------------------------------------
 
-writeChanRaw :: Chan.Chan T.Text -> PacketLineCallback t
+writeChanRaw :: Chan.Chan BS.ByteString -> PacketLineCallback t
 writeChanRaw ch =
-  PacketLineCallback (\raw -> liftIO $ Chan.writeChan ch (T.pack raw))
+  PacketLineCallback (\raw -> liftIO $ Chan.writeChan ch raw)

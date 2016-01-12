@@ -17,16 +17,18 @@
 ----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Utility.Logging where
 
+import qualified Data.ByteString.Char8 as BS
+import Data.Monoid
 import Control.Monad.IO.Class
 import Data.Thyme
 import KD8ZRC.Mapview.Types
 import System.Console.ANSI
-import Text.PrettyPrint.ANSI.Leijen
+import Text.PrettyPrint.ANSI.Leijen hiding ((<>))
 
 -- | Log a token and string to standard-output.
-logStdout :: MonadIO m => String -> String -> m ()
+logStdout :: MonadIO m => String -> BS.ByteString -> m ()
 logStdout token s =
-  liftIO . putStrLn $ "[" ++ token ++ "] " ++ s
+  liftIO . BS.putStrLn $ "[" <> BS.pack token <> "] " <> s
 
 --------------------------------------------------------------------------------
 -- Raw Packet Callbacks
@@ -46,11 +48,11 @@ logRawPacketFile ::
   String -- ^ The filename to log to.
   -> PacketLineCallback t
 logRawPacketFile file =
-  PacketLineCallback (\s -> liftIO (formatLine s >>= appendFile file))
+  PacketLineCallback (\s -> liftIO (formatLine s >>= BS.appendFile file))
   where
     formatLine s = do
       current <- getCurrentTime
-      return $ "[" ++ show current ++ "] " ++ s ++ "\n"
+      return $ "[" <> BS.pack (show current) <> "] " <> s <> "\n"
 
 --------------------------------------------------------------------------------
 -- Parsed Packet Callbacks
@@ -59,10 +61,9 @@ logRawPacketFile file =
 logParsedPacketStdoutSuccess :: Show t => ParsedPacketCallback t
 logParsedPacketStdoutSuccess =
   ParseSuccessCallback (
-    logStdout
-             (setSGRCode
-              [Reset, SetColor Foreground Vivid Green] ++
-              "PRS-OK" ++ setSGRCode [Reset]) . show)
+    logStdout (setSGRCode
+               [Reset, SetColor Foreground Vivid Green] ++
+               "PRS-OK" ++ setSGRCode [Reset]) . BS.pack . show)
 
 logParsedPacketStdoutFailure :: ParsedPacketCallback t
 logParsedPacketStdoutFailure =

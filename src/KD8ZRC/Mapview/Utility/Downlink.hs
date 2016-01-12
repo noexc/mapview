@@ -19,6 +19,7 @@
 ----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Utility.Downlink where
 
+import qualified Data.ByteString.Char8 as BS
 import Control.Lens
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
@@ -31,7 +32,7 @@ import Shelly hiding (time)
 -- | Fires off the callbacks in our 'MapviewConfig''s 'mvPacketLineCallback'
 -- field. For now, you probably want to make sure to call this from your
 -- downlink-obtaining function, on each line.
-packetCallbackCaller :: String -> MV t ()
+packetCallbackCaller :: BS.ByteString -> MV t ()
 packetCallbackCaller pkt = do
   sequenceOf_ (mvPacketLineCallback . traverse . to (`getPacketLineCallback` pkt)) =<< ask
   parsedPacketCallbackCaller pkt
@@ -41,17 +42,16 @@ packetCallbackCaller pkt = do
 -- downlink-obtaining function, on each line. This should be fixed at some
 -- point, because it forces us to give up a separation of concerns, which is
 -- annoying. I'm not yet sure of the correct abstraction, however.
-parsedPacketCallbackCaller :: String -> MV t ()
+parsedPacketCallbackCaller :: BS.ByteString -> MV t ()
 parsedPacketCallbackCaller pkt = do
   config <- ask
-  let parsed = parseString (config ^. mvParser) mempty pkt
+  let parsed = parseByteString (config ^. mvParser) mempty pkt
   mapM_ (`caller` parsed) (_mvParsedPacketCallback config)
   where
     caller :: ParsedPacketCallback t -> Result t -> MV t ()
     caller (ParseSuccessCallback c) (Success t) = c t
     caller (ParseFailureCallback c) (Failure a) = c a
     caller _ _ = return ()
-
 
 -- | This callback provides a way to obtain downlink data by shelling out to an
 -- audio modem implementation, such as @minimodem@ or @fldigi@, and using each
@@ -67,6 +67,6 @@ modemStdout exe args = do
     hndl :: MonadIO m => MapviewConfig t -> Handle -> m ()
     hndl c h = do
       liftIO $ hSetBuffering h NoBuffering
-      line' <- liftIO $ hGetLine h
-      unless (null line') (liftIO $ runReaderT (packetCallbackCaller line') c)
+      line' <- liftIO $ BS.hGetLine h
+      unless (BS.null line') (liftIO $ runReaderT (packetCallbackCaller line') c)
       hndl c h

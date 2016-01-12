@@ -18,6 +18,7 @@
 ----------------------------------------------------------------------------
 module KD8ZRC.Mapview.Types where
 
+import qualified Data.ByteString.Char8 as BS
 import Control.Lens
 import Control.Monad.Trans.Reader
 import Text.PrettyPrint.ANSI.Leijen
@@ -30,7 +31,7 @@ type MV t a = ReaderT (MapviewConfig t) IO a
 -- | The type for callbacks which occur immediately after a packet is received,
 -- before even parsing occurs.
 newtype PacketLineCallback t =
-  PacketLineCallback { getPacketLineCallback :: String -> MV t () }
+  PacketLineCallback { getPacketLineCallback :: BS.ByteString -> MV t () }
 
 -- | The type for callbacks which occur immediately after a packet is parsed.
 data ParsedPacketCallback t =
