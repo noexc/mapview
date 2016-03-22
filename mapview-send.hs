@@ -88,13 +88,13 @@ application opts state pending = do
 talk :: ConfigFileOptions -> WS.Connection -> MVar ServerState -> IO ()
 talk opts conn state = forever $
   withManager $ \man -> do
-    _ <- watchTree man (COS.fromText $ T.pack (baseDir (workingPath opts))) (const True) handle
+    _ <- watchTree man (baseDir (workingPath opts)) (const True) handle
     msg <- WS.receiveData conn
     liftIO $ readMVar state >>= broadcast msg
   where
     handle :: Event -> IO ()
-    handle (Modified fp _) = handle' fp
-    handle (Added fp _)    = handle' fp
+    handle (Modified fp _) = handle' (COS.fromText $ T.pack fp)
+    handle (Added fp _)    = handle' (COS.fromText $ T.pack fp)
     handle (Removed _ _)   = WS.sendTextData conn (T.pack "File got deleted somehow. Uh oh!")
 
     handle' :: COS.FilePath -> IO ()

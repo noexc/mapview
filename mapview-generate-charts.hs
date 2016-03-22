@@ -1,9 +1,7 @@
 module Main where
 
-import Control.Applicative
 import Control.Lens
 import Control.Monad
-import Data.Monoid (mempty)
 import Graphics.Rendering.Chart.Easy
 import Graphics.Rendering.Chart.Backend.Diagrams
 import Options.Applicative hiding (Failure, Parser, Success)

@@ -1,13 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Control.Applicative
 import Control.Monad.IO.Class
 import Control.Lens
 import qualified Data.Aeson as A
 import qualified Data.ByteString.Lazy.Char8 as C8L
 import Data.Maybe (fromMaybe)
-import Data.Monoid (mempty)
 import qualified Data.Text as T
 import Data.Thyme.Clock
 import GHC.IO.Handle
