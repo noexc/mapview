@@ -10,13 +10,15 @@ import qualified Data.Configurator.Types as Cfg
 import Data.List (dropWhileEnd)
 import qualified Data.Text as T
 import Data.Thyme.Clock
-import Data.Thyme.Format.Aeson ()
+import Data.Thyme.Format
 import Options.Applicative
 import System.Directory (createDirectoryIfMissing)
+import System.Locale (defaultTimeLocale)
 
 type Latitude  = Double
 type Longitude = Double
 type Meters    = Double
+type Voltage   = Double
 
 data Coordinates = Coordinates {
     _latitude  :: Latitude
@@ -53,16 +55,18 @@ data TelemetryLine = TelemetryLine {
   , _coordinates :: Coordinates
   , _altitude    :: Meters
   , _time        :: UTCTime
+  , _voltage     :: Voltage
   , _crc         :: CRCConfirmation
   } deriving (Eq)
 makeLenses ''TelemetryLine
 
 instance Show TelemetryLine where
-  show (TelemetryLine call (Coordinates lat' lon') alt tm crc') =
+  show (TelemetryLine call (Coordinates lat' lon') alt tm vlt crc') =
     "call:\t\t" ++ T.unpack call ++ "\n" ++
     "lat/lon:\t" ++ show lat' ++ ", " ++ show lon' ++ "\n" ++
     "alt:\t\t" ++ show alt ++ "m\n" ++
     "time:\t\t" ++ show tm ++ "\n" ++
+    "voltage:\t" ++ show vlt ++ "\n" ++
     "crc:\t\t" ++ show crc'
 
 -- TODO: lens-aeson?
@@ -101,13 +105,16 @@ instance A.FromJSON Coordinates where
   parseJSON _            = mzero
 
 instance A.ToJSON TelemetryLine where
-  toJSON (TelemetryLine _ coord alt t crc') =
+  toJSON (TelemetryLine _ coord alt t vlt crc') =
     A.object
     [ "coordinates"    A..= coord
     , "altitude"       A..= alt
-    , "time"           A..= t
+    , "voltage"        A..= vlt
+    , "time"           A..= formatTimestamp t
     , "crc"            A..= crc'
     ]
+    where
+      formatTimestamp = formatTime defaultTimeLocale "%F @ %T UTC"
 
 data ConfigFileOptions =
   ConfigFileOptions { historyPath     :: String

@@ -50,6 +50,9 @@ parseLine = do
   time' <- many (token digit)
   _ <- colon
 
+  voltage' <- eitherToNum <$> integerOrDouble
+  _ <- colon
+
   crc16T <- number 16 hexDigit
   _ <- colon
 
@@ -60,6 +63,7 @@ parseLine = do
     (Coordinates lat' lon')
     altitude'
     (readTime defaultTimeLocale "%H%M%S" time')
+    voltage'
     (mkCRCConfirmation (TelemetryCRC crc16T) crc16C)
 
 eitherToNum :: (Num b, Integral a) => Either a b -> b

@@ -40,8 +40,8 @@ telemetry {
   # mapview-telemetryparser shells out to a (given) external modem. Here is
   # where you can configure the modem to use. If you comment these out, we
   # default to "minimodem -r -q rtty".
-  modem-command = "fldigi-shell"
-  modem-flags = ["-c", "poll"]
+  modem-command = "minimodem"
+  modem-flags = ["-r", "-q", "rtty", "-S", "700", "-M", "870"]
 }
 
 websockets {
