@@ -51,5 +51,7 @@ data MapviewConfig t =
                   -- ^ As soon as Mapview is launched, this callback is run and
                   -- should begin the process of listening for telemetry data.
                 , _mvParsedPacketCallback :: [ParsedPacketCallback t]
+                  -- ^ These callbacks get called depending on whether or not a
+                  -- parse was successful.
                 }
 makeLenses ''MapviewConfig
