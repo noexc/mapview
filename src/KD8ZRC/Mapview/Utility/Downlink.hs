@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 -----------------------------------------------------------------------------
 -- |
@@ -23,6 +24,9 @@ import Control.Lens
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
 import qualified Data.ByteString.Char8 as BS
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid (mempty)
+#endif
 import qualified Data.Text as T
 import GHC.IO.Handle
 import KD8ZRC.Mapview.Types
