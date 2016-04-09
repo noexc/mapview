@@ -12,14 +12,14 @@ pushd "$f/mapview.git"
 popd
 mv dist/doc/html/mapview/* "$f/mapview.git/v3-haddock"
 pushd "$f/mapview.git"
-  git checkout master -- doc
-  pushd doc
-    asciidoctor -r asciidoctor-diagram -a ext-relative=.html *.adoc
-    cp Introduction.html index.html
-    rm *.adoc
-  popd
-  mv doc/* .
-  rmdir doc
+#  git checkout master -- doc
+#  pushd doc
+#    asciidoctor -r asciidoctor-diagram -a ext-relative=.html *.adoc
+#    cp Introduction.html index.html
+#    rm *.adoc
+#  popd
+#  mv doc/* .
+#  rmdir doc
   echo 'mapview.noexc.org' > CNAME
   git add -A
   git commit -m "Manual docs deploy."
