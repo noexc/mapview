@@ -35,9 +35,9 @@ logStdout token s =
 --------------------------------------------------------------------------------
 
 -- | Log a raw packet to standard output.
-logRawPacketStdout :: PacketLineCallback t
+logRawPacketStdout :: TelemetryReceivedCallback BS.ByteString t
 logRawPacketStdout =
-  PacketLineCallback (
+  TelemetryReceivedCallback (
     logStdout
       (setSGRCode [Reset, SetColor Foreground Vivid Yellow] ++
        "RX-RAW" ++
@@ -46,9 +46,9 @@ logRawPacketStdout =
 -- | Log a raw packet to a file.
 logRawPacketFile ::
   String -- ^ The filename to log to.
-  -> PacketLineCallback t
+  -> TelemetryReceivedCallback BS.ByteString t
 logRawPacketFile file =
-  PacketLineCallback (\s -> liftIO (formatLine s >>= BS.appendFile file))
+  TelemetryReceivedCallback (\s -> liftIO (formatLine s >>= BS.appendFile file))
   where
     formatLine s = do
       current <- getCurrentTime

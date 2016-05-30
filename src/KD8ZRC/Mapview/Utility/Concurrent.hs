@@ -21,6 +21,8 @@ import KD8ZRC.Mapview.Types
 -- Raw Packet Callbacks
 --------------------------------------------------------------------------------
 
-writeChanRaw :: Chan.Chan BS.ByteString -> PacketLineCallback t
+writeChanRaw
+  :: Chan.Chan BS.ByteString
+  -> TelemetryReceivedCallback BS.ByteString t
 writeChanRaw ch =
-  PacketLineCallback (\raw -> liftIO $ Chan.writeChan ch raw)
+  TelemetryReceivedCallback (\raw -> liftIO $ Chan.writeChan ch raw)

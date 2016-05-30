@@ -21,4 +21,4 @@ import KD8ZRC.Mapview.Types
 --
 -- TODO: Threading stuff -- where, when, how?
 mapview :: MapviewConfig t -> IO ()
-mapview config = runReaderT (config ^. mvDownlinkSpawn) config
+mapview config = runReaderT (config ^. telemetry) config
