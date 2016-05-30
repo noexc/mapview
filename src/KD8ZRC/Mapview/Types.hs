@@ -53,7 +53,6 @@ data ModemStdoutConfiguration t = ModemStdoutConfiguration {
   , _onRaw :: [TelemetryReceivedCallback BS.ByteString t]
     -- ^ What to do on as /soon/ as we get a telemetry line (before parsing)
   }
--- This breaks atm:
 
 -- | The configuration for this instance of Mapview. The @t@ parameter is the
 -- type that the telemetry parser parses into, if it is successfully able to
