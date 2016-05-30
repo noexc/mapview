@@ -32,29 +32,21 @@ import qualified Data.ByteString.Char8 as BS
 #if __GLASGOW_HASKELL__ < 710
 import Data.Monoid (mempty)
 #endif
-import qualified Data.Text as T
 import GHC.IO.Handle
 import KD8ZRC.Mapview.Types
 import Text.Trifecta hiding (Parser)
-import Shelly hiding (FilePath, path, time)
+import Shelly hiding (FilePath, command, path, time)
 import System.FSNotify
-
-type Parser t = forall m. (DeltaParsing m, Errable m) => m t
 
 -- | Fires off the callbacks in our 'MapviewConfig''s 'mvPacketLineCallback'
 -- field. For now, you probably want to make sure to call this from your
 -- downlink-obtaining function, on each line.
-packetCallbackCaller
-  :: BS.ByteString
-  -> [ParsedPacketCallback t]
-  -> Parser t
-  -> MV t ()
-packetCallbackCaller pkt cbs parser = do
-  config <- ask
+packetCallbackCaller :: BS.ByteString -> ModemStdoutConfiguration t -> MV t ()
+packetCallbackCaller pkt config = do
   sequenceOf_
-    (onTelemetry . traverse . to (`getTelemetryReceivedCallback` pkt))
+    (onRaw . traverse . to (`getTelemetryReceivedCallback` pkt))
     config
-  parsedPacketCallbackCaller parser pkt cbs
+  parsedPacketCallbackCaller config pkt
 
 -- | Fires off the callbacks in our 'MapviewConfig''s 'mvParsedPacketCallback'
 -- field. For now, you probably want to make sure to call this from your
@@ -62,13 +54,12 @@ packetCallbackCaller pkt cbs parser = do
 -- point, because it forces us to give up a separation of concerns, which is
 -- annoying. I'm not yet sure of the correct abstraction, however.
 parsedPacketCallbackCaller
-  :: Parser t
+  :: ModemStdoutConfiguration t
   -> BS.ByteString
-  -> [ParsedPacketCallback t]
   -> MV t ()
-parsedPacketCallbackCaller parser pkt cbs = do
-  let parsed = parseByteString parser mempty pkt
-  mapM_ (`caller` parsed) cbs
+parsedPacketCallbackCaller tCfg pkt = do
+  let parsed = parseByteString (tCfg ^. parser) mempty pkt
+  mapM_ (`caller` parsed) (tCfg ^. parsedCallbacks)
   where
     caller :: ParsedPacketCallback t -> Result t -> MV t ()
     caller (ParseSuccessCallback c) (Success t) = c t
@@ -78,22 +69,18 @@ parsedPacketCallbackCaller parser pkt cbs = do
 -- | This callback provides a way to obtain downlink data by shelling out to an
 -- audio modem implementation, such as @minimodem@ or @fldigi@, and using each
 -- (newline-separated) line of its standard output as a downlink packet.
-modemStdout
-  :: forall t. T.Text      -- ^ The modem command to run (e.g. @minimodem@ or @fldigi-shell@)
-  -> [T.Text] -- ^ Flags/arguments to pass to the modem command
-  -> [ParsedPacketCallback t] -- ^ Callbacks to run after a parsing attempt
-  -> Parser t
-  -> MV t ()
-modemStdout exe args cbs parser = do
+modemStdout :: forall t. ModemStdoutConfiguration t -> MV t ()
+modemStdout tCfg = do
   config <- ask
-  shelly $ runHandle (fromText exe) args (hndl config)
+  shelly $
+    runHandle (tCfg ^. command . to fromText) (tCfg ^. args) (hndl config)
   where
     hndl :: MonadIO m => MapviewConfig t -> Handle -> m ()
     hndl c h = do
       liftIO $ hSetBuffering h NoBuffering
       line' <- liftIO $ BS.hGetLine h
       unless (BS.null line') $
-        (liftIO $ runReaderT (packetCallbackCaller line' cbs parser) c)
+        (liftIO $ runReaderT (packetCallbackCaller line' tCfg) c)
       hndl c h
 
 -- | This callback listens for changes in a directory and acts on them. It has
