@@ -63,7 +63,7 @@ parsedPacketCallbackCaller tCfg pkt = do
   where
     caller :: ParsedPacketCallback t -> Result t -> MV t ()
     caller (ParseSuccessCallback c) (Success t) = c t
-    caller (ParseFailureCallback c) (Failure a) = c a
+    caller (ParseFailureCallback c) (Failure a) = c (_errDoc a)
     caller _ _ = return ()
 
 -- | This callback provides a way to obtain downlink data by shelling out to an
